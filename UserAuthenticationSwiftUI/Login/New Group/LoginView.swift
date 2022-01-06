@@ -24,7 +24,7 @@ struct LoginView: View {
             } // VStack
             
             // MARK: Forgot Password
-            HStack {F
+            HStack {
                 // User Spacer to push Forgot Password to right side
                 Spacer()
                 Button(action: {
