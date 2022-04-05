@@ -35,7 +35,8 @@ struct UserAuthenticationSwiftUIApp: App {
                         // Inject service into HomeView from parent to child view
                         .environmentObject(sessionService)
                 case .loggedOut:
-                    LoginView()
+                    //LoginView()
+                    ImagePickerView()
                 }
             } // NavigationView
         } // WindowGroup

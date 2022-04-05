@@ -16,6 +16,8 @@
 		89375768278765F400060581 /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89375767278765F400060581 /* LoginViewModel.swift */; };
 		89375772278785A100060581 /* ForgotPasswordService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89375771278785A100060581 /* ForgotPasswordService.swift */; };
 		8937577427878AEB00060581 /* ForgotPasswordViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8937577327878AEB00060581 /* ForgotPasswordViewModel.swift */; };
+		897BD0FC2789D2FE000D3EF1 /* ImagePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897BD0FB2789D2FE000D3EF1 /* ImagePickerView.swift */; };
+		897BD0FE2789DB85000D3EF1 /* PickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897BD0FD2789DB84000D3EF1 /* PickerViewController.swift */; };
 		89AE62502777D09300BDE362 /* UserAuthenticationSwiftUIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89AE624F2777D09300BDE362 /* UserAuthenticationSwiftUIApp.swift */; };
 		89AE62542777D09800BDE362 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89AE62532777D09800BDE362 /* Assets.xcassets */; };
 		89AE62572777D09800BDE362 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89AE62562777D09800BDE362 /* Preview Assets.xcassets */; };
@@ -48,6 +50,7 @@
 		89AE62B72784B91500BDE362 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 89AE62B62784B91500BDE362 /* FirebaseDatabase */; };
 		89AE62B92784B91500BDE362 /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = 89AE62B82784B91500BDE362 /* FirebaseFunctions */; };
 		89AE62BB2784B91500BDE362 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 89AE62BA2784B91500BDE362 /* FirebaseStorage */; };
+		89C7BF7927FA1D7F0005BF7C /* PhotoPickerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89C7BF7827FA1D7F0005BF7C /* PhotoPickerModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -77,6 +80,8 @@
 		89375767278765F400060581 /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
 		89375771278785A100060581 /* ForgotPasswordService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordService.swift; sourceTree = "<group>"; };
 		8937577327878AEB00060581 /* ForgotPasswordViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordViewModel.swift; sourceTree = "<group>"; };
+		897BD0FB2789D2FE000D3EF1 /* ImagePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePickerView.swift; sourceTree = "<group>"; };
+		897BD0FD2789DB84000D3EF1 /* PickerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickerViewController.swift; sourceTree = "<group>"; };
 		89AE624C2777D09300BDE362 /* UserAuthenticationSwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UserAuthenticationSwiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		89AE624F2777D09300BDE362 /* UserAuthenticationSwiftUIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAuthenticationSwiftUIApp.swift; sourceTree = "<group>"; };
 		89AE62532777D09800BDE362 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -99,6 +104,7 @@
 		89AE629527845B5600BDE362 /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordView.swift; sourceTree = "<group>"; };
 		89AE629827849EC400BDE362 /* RegistrationDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RegistrationDetails.swift; path = UserAuthenticationSwiftUI/ViewComponents/RegistrationDetails.swift; sourceTree = SOURCE_ROOT; };
 		89AE629B27849FA800BDE362 /* RegistrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistrationService.swift; sourceTree = "<group>"; };
+		89C7BF7827FA1D7F0005BF7C /* PhotoPickerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoPickerModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -252,6 +258,24 @@
 			path = Service;
 			sourceTree = "<group>";
 		};
+		897BD0F92789D2BF000D3EF1 /* PickGelImage */ = {
+			isa = PBXGroup;
+			children = (
+				897BD0FA2789D2E1000D3EF1 /* View */,
+				897BD0FD2789DB84000D3EF1 /* PickerViewController.swift */,
+				89C7BF7827FA1D7F0005BF7C /* PhotoPickerModel.swift */,
+			);
+			path = PickGelImage;
+			sourceTree = "<group>";
+		};
+		897BD0FA2789D2E1000D3EF1 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				897BD0FB2789D2FE000D3EF1 /* ImagePickerView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
 		89AE62432777D09300BDE362 = {
 			isa = PBXGroup;
 			children = (
@@ -275,6 +299,7 @@
 		89AE624E2777D09300BDE362 /* UserAuthenticationSwiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				897BD0F92789D2BF000D3EF1 /* PickGelImage */,
 				8937576A278777E600060581 /* Forgot Password */,
 				8904918527874EE1007D1FEE /* Login */,
 				8904917A2785EE22007D1FEE /* Session */,
@@ -515,8 +540,10 @@
 				89AE629C27849FA800BDE362 /* RegistrationService.swift in Sources */,
 				89AE629927849EC600BDE362 /* RegistrationDetails.swift in Sources */,
 				890491802785EFF6007D1FEE /* SessionService.swift in Sources */,
+				897BD0FC2789D2FE000D3EF1 /* ImagePickerView.swift in Sources */,
 				89375768278765F400060581 /* LoginViewModel.swift in Sources */,
 				89AE62902783E55B00BDE362 /* CloseModifier.swift in Sources */,
+				89C7BF7927FA1D7F0005BF7C /* PhotoPickerModel.swift in Sources */,
 				8937576027874FF900060581 /* LoginCredentials.swift in Sources */,
 				89AE628C2783DE2D00BDE362 /* RegisterView.swift in Sources */,
 				89AE628227790A9200BDE362 /* PreviewLayoutComponentModifier.swift in Sources */,
@@ -524,6 +551,7 @@
 				89375772278785A100060581 /* ForgotPasswordService.swift in Sources */,
 				89AE62502777D09300BDE362 /* UserAuthenticationSwiftUIApp.swift in Sources */,
 				8937577427878AEB00060581 /* ForgotPasswordViewModel.swift in Sources */,
+				897BD0FE2789DB85000D3EF1 /* PickerViewController.swift in Sources */,
 				89AE629627845B5600BDE362 /* ForgotPasswordView.swift in Sources */,
 				8904917D2785EE4E007D1FEE /* SessionUserDetails.swift in Sources */,
 				89AE62802778DF6100BDE362 /* InputTextFieldView.swift in Sources */,

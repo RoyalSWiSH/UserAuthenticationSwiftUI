@@ -11,6 +11,8 @@ import FirebaseDatabase
 import FirebaseAuth
 import FirebaseFirestoreSwift
 
+import Supabase
+
 
 enum RegistrationKeys: String {
     case firstName
@@ -27,11 +29,15 @@ protocol RegistrationService {
 // Now we create a implementation that uses our protocol. Use final such that
 final class RegistrationServiceImpl: RegistrationService {
     func register(with details: RegistrationDetails) -> AnyPublisher<Void, Error> {
+        
+     
+        
         // Use Combine feature Deffered and Future
         
         Deferred {
             
             Future { promise in
+                
                 // Call FirebaseAuth
                 Auth.auth()
                     .createUser(withEmail: details.email, password: details.password) { res, error in
@@ -39,6 +45,9 @@ final class RegistrationServiceImpl: RegistrationService {
                         if let err = error {
                             promise(.failure(err))
                         } else {
+                            
+                            
+                           
                             
                             // Associate Firebase Realtime DB with User
                             if let uid = res?.user.uid {
@@ -61,6 +70,7 @@ final class RegistrationServiceImpl: RegistrationService {
                                         }
                                     }
                                 // TOOD: Try Firestore Database
+                           
                                 
                             }
                             else {

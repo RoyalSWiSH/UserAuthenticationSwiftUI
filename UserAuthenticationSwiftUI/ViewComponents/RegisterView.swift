@@ -38,6 +38,8 @@ struct RegisterView: View {
                 ButtonView(title: "Sign up") {
                     // TODO: Handle create action here
                     vm.register()
+                    
+                    
                 }
             }
             .padding(.horizontal, 15)
