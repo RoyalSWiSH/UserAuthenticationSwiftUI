@@ -59,7 +59,7 @@ class PickedMediaItems: ObservableObject {
         items.append(item)
     }
     
-    func deletaAll() {
+    func deleteAll() {
         for (index, _) in items.enumerated() {
             items[index].delete()
         }

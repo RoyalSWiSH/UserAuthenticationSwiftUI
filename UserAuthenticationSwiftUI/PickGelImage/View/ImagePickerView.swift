@@ -5,8 +5,13 @@
 //  Created by Sebastian Roy on 08.01.22.
 //
 
+// https://github.com/appcoda/PHPickerDemo/blob/main/final/PHPickerDemo/PHPickerDemo/ItemsView.swift
+    
+
 import SwiftUI
 import PhotosUI
+//For Videos
+import AVKit
 
 struct ImagePickerView: View {
     
@@ -20,64 +25,63 @@ struct ImagePickerView: View {
     var configuration = PHPickerConfiguration(photoLibrary: PHPhotoLibrary.shared())
     
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-        Button(action: {
-            self.showImagePicker.toggle()
-        }
-        , label: {
-            Text("Select Gel Image")
-            Image("")
-                .resizable()
-                .frame(width: 120, height: 120, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
-                .clipShape(/*@START_MENU_TOKEN@*/Circle()/*@END_MENU_TOKEN@*/)
-        }
+        NavigationView {
+            List(mediaItems.items, id: \.id) { item in
+                ZStack(alignment: .topLeading) {
+                    if item.mediaType == .photo {
+                        Image(uiImage: item.photo ?? UIImage())
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    } else if item.mediaType == .video {
+                        if let url = item.url {
+                            VideoPlayer(player: AVPlayer(url: url))
+                                .frame(minHeight: 200)
+                        } else { EmptyView() }
+                    } else {
+                  //      if let livePhoto = item.livePhoto {
+                        //    LivePhotoView(livePhoto: livePhoto)
+                          //      .frame(minHeight: 200)
+                            // TODO: Add new File LivePhotoView and outcomment
+                   //     } else { EmptyView() }
+                    }
 
-        )
+                    Image(systemName: getMediaImageName(using: item))
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 24, height: 24)
+                        .padding(4)
+                        .background(Color.black.opacity(0.5))
+                        .foregroundColor(.white)
 
-        Image(systemName: "plus")
-            .frame(width: 30, height: 30, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
-            .foregroundColor(.white)
-            .background(Color.gray)
-            .clipShape(/*@START_MENU_TOKEN@*/Circle()/*@END_MENU_TOKEN@*/)
-           // .padding(5)
-        }
-        .padding(5)
-        ZStack() {
-            Button("Present Picker") {
-                showImagePicker.toggle()
+                    }
+                }
+            .navigationBarItems(leading: Button(action: {
+                mediaItems.deleteAll()
+            }, label: {
+                Image(systemName: "trash")
+                    .foregroundColor(.red)
+            }), trailing: Button(action: {
+                showImagePicker = true
+            }, label: {
+                Image(systemName: "plus")
+            }))
             }
-            .sheet(isPresented: $showImagePicker) {
-    //            PickerViewController(sourceType: self.selectedImage)
-                
-    //            var configuration = PHPickerConfiguration(photoLibrary: PHPhotoLibrary.shared())
-              //  configuration.filter = .images
-                
-                // Multiimage support
-            //    configuration.selectionLimit = 0
-                PhotoPicker(configuration: configuration, mediaItems: mediaItems, isPresented: $showImagePicker)
-                
-            }
-        
-       
-        List(mediaItems.items, id: \.id) { item in
-           
-            ZStack(alignment: .bottomLeading, content: {
-                
-                Image(uiImage: item.photo ?? UIImage())
-                                           .resizable()
-                                           .aspectRatio(contentMode: .fit)
-                
-            })
-           
+    .sheet(isPresented: $showImagePicker, content: {
+        PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
+            showImagePicker = false
         }
+    })
+    }
+    
+    fileprivate func getMediaImageName(using item: PhotoPickerModel) -> String {
+        switch item.mediaType {
+        case .photo: return "photo"
+        case .video: return "video"
+        case .livePhoto: return "livephoto"
         }
-        
-       
-      
-        
     }
 }
-
+    
 struct SwiftUIView_Previews: PreviewProvider {
     static var previews: some View {
         ImagePickerView()
@@ -86,14 +90,21 @@ struct SwiftUIView_Previews: PreviewProvider {
 
 
 struct PhotoPicker: UIViewControllerRepresentable {
-    let configuration: PHPickerConfiguration
+  
     
     @ObservedObject var mediaItems: PickedMediaItems
     
-    @Binding var isPresented: Bool
+ //   @Binding var isPresented: Bool
+    var didFinishPicking: (_ didSelectItems: Bool) -> Void
+    
     
     func makeUIViewController(context: Context) -> PHPickerViewController {
-    let controller = PHPickerViewController(configuration: configuration)
+    var config = PHPickerConfiguration()
+        config.filter = .any(of: [.images, .videos, .livePhotos])
+    config.selectionLimit = 0
+    config.preferredAssetRepresentationMode = .current
+        
+    let controller = PHPickerViewController(configuration: config)
     controller.delegate = context.coordinator
     return controller
     }
@@ -103,18 +114,25 @@ struct PhotoPicker: UIViewControllerRepresentable {
     }
     
     func makeCoordinator() -> Coordinator {
-        Coordinator(self)
+        Coordinator(with: self)
     }
     
     // Use a Coordinator to act as your PHPickerVIewControllerDelegate
     class Coordinator: PHPickerViewControllerDelegate {
-        private let parent: PhotoPicker
+        var parent: PhotoPicker
         
-        init(_ parent: PhotoPicker) {
+        init(with parent: PhotoPicker) {
             self.parent = parent
         }
         
         func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+            
+            // Why is this in the original?
+            parent.didFinishPicking(!results.isEmpty)
+            guard !results.isEmpty else {
+                return
+            }
+            
             print(results)
             
             let isLivePhoto = false // correct later
@@ -146,9 +164,9 @@ struct PhotoPicker: UIViewControllerRepresentable {
                 }
             }
             
-            for result in results {
-                
-            }
+//            for result in results {
+//
+//            }
             
             
 //                    if let itemProvider = results.first?.itemProvider, itemProvider.canLoadObject(ofClass: UIImage.self) {
@@ -166,7 +184,7 @@ struct PhotoPicker: UIViewControllerRepresentable {
 //                        }
 //                    }
             
-            parent.isPresented = false // Set isPresented to flase because picking has finished
+     //       parent.isPresented = false // Set isPresented to flase because picking has finished
         }
     }
 }
