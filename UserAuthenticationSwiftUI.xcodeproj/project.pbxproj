@@ -18,6 +18,12 @@
 		8937577427878AEB00060581 /* ForgotPasswordViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8937577327878AEB00060581 /* ForgotPasswordViewModel.swift */; };
 		897BD0FC2789D2FE000D3EF1 /* ImagePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897BD0FB2789D2FE000D3EF1 /* ImagePickerView.swift */; };
 		897BD0FE2789DB85000D3EF1 /* PickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897BD0FD2789DB84000D3EF1 /* PickerViewController.swift */; };
+		8999E0992814A00400ABF937 /* SendGelImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8999E0982814A00400ABF937 /* SendGelImageView.swift */; };
+		8999E09B2814A02600ABF937 /* SendGelImageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8999E09A2814A02600ABF937 /* SendGelImageModel.swift */; };
+		8999E09D2814A03F00ABF937 /* SendGelImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8999E09C2814A03F00ABF937 /* SendGelImageViewController.swift */; };
+		8999E0A028183C8D00ABF937 /* GelImagesSampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8999E09F28183C8D00ABF937 /* GelImagesSampleData.swift */; };
+		8999E0A22819F5E900ABF937 /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8999E0A12819F5E900ABF937 /* ImageLoader.swift */; };
+		8999E0A4281EB50000ABF937 /* JSONLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8999E0A3281EB4FC00ABF937 /* JSONLoader.swift */; };
 		89AE62502777D09300BDE362 /* UserAuthenticationSwiftUIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89AE624F2777D09300BDE362 /* UserAuthenticationSwiftUIApp.swift */; };
 		89AE62542777D09800BDE362 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89AE62532777D09800BDE362 /* Assets.xcassets */; };
 		89AE62572777D09800BDE362 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89AE62562777D09800BDE362 /* Preview Assets.xcassets */; };
@@ -82,6 +88,12 @@
 		8937577327878AEB00060581 /* ForgotPasswordViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordViewModel.swift; sourceTree = "<group>"; };
 		897BD0FB2789D2FE000D3EF1 /* ImagePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePickerView.swift; sourceTree = "<group>"; };
 		897BD0FD2789DB84000D3EF1 /* PickerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickerViewController.swift; sourceTree = "<group>"; };
+		8999E0982814A00400ABF937 /* SendGelImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendGelImageView.swift; sourceTree = "<group>"; };
+		8999E09A2814A02600ABF937 /* SendGelImageModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendGelImageModel.swift; sourceTree = "<group>"; };
+		8999E09C2814A03F00ABF937 /* SendGelImageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendGelImageViewController.swift; sourceTree = "<group>"; };
+		8999E09F28183C8D00ABF937 /* GelImagesSampleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GelImagesSampleData.swift; sourceTree = "<group>"; };
+		8999E0A12819F5E900ABF937 /* ImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoader.swift; sourceTree = "<group>"; };
+		8999E0A3281EB4FC00ABF937 /* JSONLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONLoader.swift; sourceTree = "<group>"; };
 		89AE624C2777D09300BDE362 /* UserAuthenticationSwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UserAuthenticationSwiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		89AE624F2777D09300BDE362 /* UserAuthenticationSwiftUIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAuthenticationSwiftUIApp.swift; sourceTree = "<group>"; };
 		89AE62532777D09800BDE362 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -276,6 +288,24 @@
 			path = View;
 			sourceTree = "<group>";
 		};
+		8999E09728149FDC00ABF937 /* SendGelImage */ = {
+			isa = PBXGroup;
+			children = (
+				8999E0982814A00400ABF937 /* SendGelImageView.swift */,
+				8999E09A2814A02600ABF937 /* SendGelImageModel.swift */,
+				8999E09C2814A03F00ABF937 /* SendGelImageViewController.swift */,
+			);
+			path = SendGelImage;
+			sourceTree = "<group>";
+		};
+		8999E09E28183C6700ABF937 /* GelImagesSampleData */ = {
+			isa = PBXGroup;
+			children = (
+				8999E09F28183C8D00ABF937 /* GelImagesSampleData.swift */,
+			);
+			path = GelImagesSampleData;
+			sourceTree = "<group>";
+		};
 		89AE62432777D09300BDE362 = {
 			isa = PBXGroup;
 			children = (
@@ -299,6 +329,8 @@
 		89AE624E2777D09300BDE362 /* UserAuthenticationSwiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				8999E09E28183C6700ABF937 /* GelImagesSampleData */,
+				8999E09728149FDC00ABF937 /* SendGelImage */,
 				897BD0F92789D2BF000D3EF1 /* PickGelImage */,
 				8937576A278777E600060581 /* Forgot Password */,
 				8904918527874EE1007D1FEE /* Login */,
@@ -376,6 +408,8 @@
 			isa = PBXGroup;
 			children = (
 				89AE629B27849FA800BDE362 /* RegistrationService.swift */,
+				8999E0A12819F5E900ABF937 /* ImageLoader.swift */,
+				8999E0A3281EB4FC00ABF937 /* JSONLoader.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -533,15 +567,21 @@
 			buildActionMask = 2147483647;
 			files = (
 				893757632787505E00060581 /* LoginService.swift in Sources */,
+				8999E0992814A00400ABF937 /* SendGelImageView.swift in Sources */,
+				8999E0A4281EB50000ABF937 /* JSONLoader.swift in Sources */,
+				8999E09B2814A02600ABF937 /* SendGelImageModel.swift in Sources */,
 				89AE629427845A3B00BDE362 /* HomeView.swift in Sources */,
 				89AE628A2783696F00BDE362 /* LoginView.swift in Sources */,
 				89AE6284277922C200BDE362 /* InputPasswordView.swift in Sources */,
 				89AE62862779299700BDE362 /* ButtonView.swift in Sources */,
 				89AE629C27849FA800BDE362 /* RegistrationService.swift in Sources */,
+				8999E09D2814A03F00ABF937 /* SendGelImageViewController.swift in Sources */,
 				89AE629927849EC600BDE362 /* RegistrationDetails.swift in Sources */,
 				890491802785EFF6007D1FEE /* SessionService.swift in Sources */,
 				897BD0FC2789D2FE000D3EF1 /* ImagePickerView.swift in Sources */,
 				89375768278765F400060581 /* LoginViewModel.swift in Sources */,
+				8999E0A028183C8D00ABF937 /* GelImagesSampleData.swift in Sources */,
+				8999E0A22819F5E900ABF937 /* ImageLoader.swift in Sources */,
 				89AE62902783E55B00BDE362 /* CloseModifier.swift in Sources */,
 				89C7BF7927FA1D7F0005BF7C /* PhotoPickerModel.swift in Sources */,
 				8937576027874FF900060581 /* LoginCredentials.swift in Sources */,
@@ -641,7 +681,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -696,7 +736,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -716,7 +756,7 @@
 				DEVELOPMENT_TEAM = 9BX84Q88ES;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = UserAuthenticationSwiftUI/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -738,7 +778,7 @@
 				DEVELOPMENT_TEAM = 9BX84Q88ES;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = UserAuthenticationSwiftUI/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -758,7 +798,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9BX84Q88ES;
 				INFOPLIST_FILE = UserAuthenticationSwiftUITests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -780,7 +820,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9BX84Q88ES;
 				INFOPLIST_FILE = UserAuthenticationSwiftUITests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

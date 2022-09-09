@@ -14,7 +14,7 @@ struct PhotoPickerModel {
     }
     
     var id: String
-    var photo: UIImage?
+    var photo: UIImage?  // TODO: Replace with Image
     var url: URL?
     var livePhoto: PHLivePhoto?
     var mediaType: MediaType = .photo

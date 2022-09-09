@@ -26,6 +26,8 @@ struct UserAuthenticationSwiftUIApp: App {
     
     // Register Session Service and use state of SessionService to decide which View should appear
     @StateObject var sessionService = SessionServiceImpl()
+  //  @StateObject var response: Response
+    
     var body: some Scene {
         WindowGroup {
             NavigationView {
@@ -36,7 +38,8 @@ struct UserAuthenticationSwiftUIApp: App {
                         .environmentObject(sessionService)
                 case .loggedOut:
                     //LoginView()
-                    ImagePickerView()
+                   // ImagePickerView()
+                    SendGelImageView(image: imageData, response: response)
                 }
             } // NavigationView
         } // WindowGroup

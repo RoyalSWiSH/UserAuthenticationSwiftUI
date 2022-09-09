@@ -24,7 +24,7 @@ class PickerViewController: UIViewController {
         configuration.filter = .images
 
         // Multiimage support
-        configuration.selectionLimit = 0
+        configuration.selectionLimit = 20
 
 
         let picker = PHPickerViewController(configuration: configuration)
