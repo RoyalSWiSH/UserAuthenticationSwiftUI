@@ -58,6 +58,237 @@ struct GelImageMetaData: Codable, Hashable {
     }
 }
 
+// Replacement for GelImageMetaData
+
+struct GelAnalysisResponse: Codable, Hashable {
+    let meta: Meta
+    let gelImage: GelImage
+    let experimentalMethod: ExperimentalMethod
+    let ladder: Ladder
+    let detection: Detection
+    let columns: [Column]
+    let bands: [Band]
+    
+    enum CodingKeys: String, CodingKey {
+        case meta = "meta"
+        case gelImage = "image"
+        case experimentalMethod = "experimentalMethod"
+        case ladder = "ladder"
+        case detection = "detection"
+        case columns = "columns"
+        case bands = "bands"
+    }
+}
+
+// TODO: Change the types for Xid, CreatedOn and LastUpdated to something better than string
+struct Meta: Codable, Hashable {
+    let title: String
+    let xid: String
+    let createdOn: String
+    let lastUpdated: String
+
+    // Declare the corresponding JSON keys
+    enum CodingKeys: String, CodingKey {
+        case title = "title"
+        case xid = "xid"
+        case createdOn = "createdOn"
+        case lastUpdated = "lastUpdated"
+    }
+}
+
+struct GelImage: Codable, Hashable {
+    let s3url: String
+    let filename: String
+    let xid: String
+
+    // Declare the corresponding JSON keys
+    enum CodingKeys: String, CodingKey {
+        case s3url = "s3url"
+        case filename = "filename"
+        case xid = "xid"
+    }
+    
+}
+
+struct ExperimentalMethod: Codable, Hashable {
+    let name: String
+    let sampleType: String
+    let units: String
+    
+    // Declare the corresponding JSON keys
+    enum CodingKeys: String, CodingKey {
+        case name = "name"
+        case sampleType = "sampleType"
+        case units = "units"
+    }
+}
+
+struct Ladder: Codable, Hashable {
+    let name: String
+    let xid: String
+    let fragments: [Fragment]
+    
+    // Declare the corresponding JSON keys
+    enum CodingKeys: String, CodingKey {
+        case name = "name"
+        case xid = "xid"
+        case fragments = "fragments"
+    }
+}
+
+struct Fragment: Codable, Hashable {
+    let position: Int
+    let length: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case position = "position"
+        case length = "length"
+    }
+}
+
+struct Detection: Codable, Hashable {
+    let mode: String
+    let trainingDate: String
+    let inferenceDate: String
+    
+    enum CodingKeys: String, CodingKey {
+        case mode = "mode"
+        case trainingDate = "trainingDate"
+        case inferenceDate = "inferenceDate"
+    }
+}
+
+struct Column: Codable, Hashable {
+    let index: Int
+    let name: String
+    
+    enum CodingKeys: String, CodingKey {
+        case index = "index"
+        case name = "name"
+    }
+}
+
+struct Band: Codable, Hashable {
+    let column: Int
+    let bpSize: Int
+    let intensity: String
+    let smear: String
+ //   let detection: String
+    let xid: String
+    let confidence: Double
+    let xMin: Int
+    let yMin: Int
+    let xMax: Int
+    let yMax: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case column = "column"
+        case bpSize = "bpSize"
+        case intensity = "intensity"
+        case smear = "smear"
+  //      case detection = "detection"
+        case xid = "xid"
+        case confidence = "confidence"
+        case xMin = "xMin"
+        case yMin = "yMin"
+        case xMax = "xMax"
+        case yMax = "yMax"
+    }
+    
+}
+
+
+extension GelAnalysisResponse {
+    
+   
+    enum DecodingError: Error {
+        case descriptionError
+        case dataError
+    }
+    init(from decoder: Decoder) throws {
+    let meta: Meta
+    let gelImage: GelImage
+        
+    let experimentalMethod: ExperimentalMethod
+    let ladder: Ladder
+    let detection: Detection
+    let columns: [Column]
+    let bands: [Band]
+        
+    let container = try decoder.container(keyedBy:CodingKeys.self)
+    
+        do {
+            meta =  try container.decode(Meta.self, forKey: .meta)
+        }
+        catch {
+            print("Error decoding Meta")
+            throw DecodingError.descriptionError
+        }
+        
+        do {
+            gelImage =  try container.decode(GelImage.self, forKey: .gelImage)
+        }
+        catch {
+            print("Error decoding GelImage")
+            print(error)
+            throw DecodingError.descriptionError
+        }
+        
+        do {
+            experimentalMethod =  try container.decode(ExperimentalMethod.self, forKey: .experimentalMethod)
+        }
+        catch {
+            print(error)
+            throw DecodingError.descriptionError
+        }
+        
+        do {
+            ladder =  try container.decode(Ladder.self, forKey: .ladder)
+        }
+        catch {
+            print(error)
+            throw DecodingError.descriptionError
+        }
+    
+        do {
+             detection =  try container.decode(Detection.self, forKey: .detection)
+        }
+        catch {
+            print(error)
+            throw DecodingError.descriptionError
+        }
+        
+        do {
+            columns =  try container.decode([Column].self, forKey: .columns)
+        }
+        catch {
+            print(error)
+            throw DecodingError.descriptionError
+        }
+        
+        do {
+            bands =  try container.decode([Band].self, forKey: .bands)
+        }
+        catch {
+            print(error)
+            throw DecodingError.descriptionError
+        }
+//        guard let desc = try container.decode(Description?.self, forKey: .gelImageMetaDataDescription)
+//        else {
+//            print("Error decoding description")
+//            throw DecodingError.descriptionError
+//        }
+//
+        self.meta = meta
+        self.gelImage = gelImage
+        self.experimentalMethod = experimentalMethod
+        self.ladder = ladder
+        self.detection = detection
+        self.columns = columns
+        self.bands = bands
+    }
+}
+
 extension GelImageMetaData {
     
    
@@ -126,22 +357,22 @@ struct Description: Codable, Hashable {
     let image: ImageProperties
 }
 
-// MARK: - Column
-struct Column: Codable, Hashable {
-    let number: Int
-    let name, uid: String
- //   let boundaries: Boundaries
-}
+//// MARK: - Column
+//struct Column: Codable, Hashable {
+//    let number: Int
+//    let name, uid: String
+// //   let boundaries: Boundaries
+//}
 
 // MARK: - Boundaries
 struct Boundaries: Codable, Hashable {
     let xLeft, xRight: Double
 }
 
-// MARK: - Detection
-struct Detection: Codable, Hashable {
-    let mode, algorithm, date: String
-}
+//// MARK: - Detection
+//struct Detection: Codable, Hashable {
+//    let mode, algorithm, date: String
+//}
 
 // MARK: - Image
 struct ImageProperties: Codable, Hashable {
@@ -371,6 +602,8 @@ class Api: ObservableObject {
     
     @Published var gelImageMetaData: [GelImageMetaData] = []
     
+    @Published var gelAnalysisResponse: [GelAnalysisResponse] = []
+    
     @Published var column: [Column] = []
     
     
@@ -383,18 +616,22 @@ class Api: ObservableObject {
             
           // let json1 = try! JSONDecoder().decode(GelImageMetaData.self, from: data)
             do {
-                let json = try JSONDecoder().decode(GelImageMetaData.self, from: data)
+                let json = try JSONDecoder().decode(GelAnalysisResponse.self, from: data)
                 print(json)
                 DispatchQueue.main.async {
-                    self.gelImageMetaData.append(json)
-                    print("Ergebnis Titel")
-                    print(json.gelImageMetaDataDescription.title)
-                    print("Visibility")
-                    print(json.data[0].path)
+                      self.gelAnalysisResponse.append(json)
+                      print("Ergebnis Titel")
+                      print(json.meta.title)
+   
+//                    self.gelImageMetaData.append(json)
+//                    print("Ergebnis Titel")
+//                    print(json.gelImageMetaDataDescription.title)
+//                    print("Visibility")
+//                    print(json.data[0].path)
                     //return json
                 }
             } catch {
-                print("JSON Format does not comply with gelImageMetaData. \(error)")
+                print("JSON Format does not comply with GelAnalysisResponse. \(error)")
                 //print(json.gelImageMetaDataDescription.)
             }
             }
