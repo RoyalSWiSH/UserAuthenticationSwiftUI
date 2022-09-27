@@ -194,7 +194,6 @@ struct Band: Codable, Hashable {
         case xMax = "xMax"
         case yMax = "yMax"
     }
-    
 }
 
 
@@ -622,7 +621,8 @@ class Api: ObservableObject {
                       self.gelAnalysisResponse.append(json)
                       print("Ergebnis Titel")
                       print(json.meta.title)
-   
+                      print("Koordinaten yMin:")
+                      print(json.bands[0].yMin)
 //                    self.gelImageMetaData.append(json)
 //                    print("Ergebnis Titel")
 //                    print(json.gelImageMetaDataDescription.title)
