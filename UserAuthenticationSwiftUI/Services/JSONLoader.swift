@@ -496,20 +496,28 @@ struct JSONContentUI: View {
             
         AsyncImage(url: self.url, placeholder: { Text("Loading ... 123")
         })
-            .aspectRatio(3 / 3, contentMode: .fit)
-            .frame(minHeight: 300, maxHeight: 600)
-            .position(x: 160, y: 220)
-            .overlay(ForEach(api.gelImageMetaData, id: \.self) { gelImage in
+        .aspectRatio(3 / 3, contentMode: .fit)
+         //   .frame(minHeight: 300, maxHeight: 600)
+         //   .position(x: 200, y: 0)
+        .overlay(ForEach(api.gelAnalysisResponse, id: \.self) { gelImage in
                 //  List {
                     //  Text(gelImage.gelImageMetaDataDescription.title)
-                ForEach(gelImage.data, id: \.self) { box in
+               // VStack{
+                ForEach(gelImage.bands, id: \.self) { box in
+                    
                 Rectangle()
-                        .stroke(lineWidth: 4)
-                        .size(CGSize(width: 20, height: 10))
+                        .stroke(lineWidth: 2)
+                        .frame(width: 20, height: 10)
+                        .border(.red)
                         .foregroundColor(.blue)
-                        .position(x: CGFloat(box.box.x), y: CGFloat(box.box.y))
+                        .position(x: CGFloat(box.xMin), y: CGFloat(box.yMin))
+
+                Text(String(box.yMin))
+                        .border(.green)
+                        .position(x: CGFloat(box.xMin), y: CGFloat(box.yMin))
                     }
                   }
+             //   }
             )
             
          // List {
@@ -623,7 +631,7 @@ class Api: ObservableObject {
                       print(json.meta.title)
                       print("Koordinaten yMin:")
                       print(json.bands[0].yMin)
-//                    self.gelImageMetaData.append(json)
+                   // self.gelImageMetaData.append(json)
 //                    print("Ergebnis Titel")
 //                    print(json.gelImageMetaDataDescription.title)
 //                    print("Visibility")
@@ -647,7 +655,7 @@ class Api: ObservableObject {
             if let data = data, let string = String(data: data, encoding: .utf8) {
                // print(string)
                 
-                // https://developer.apple.com/documentation/foundation/jsondecoder
+               // https://developer.apple.com/documentation/foundation/jsondecoder
                 // For better debugging uncomment
                 // let json1 = try! JSONDecoder().decode([user].self, from: data)
                 
