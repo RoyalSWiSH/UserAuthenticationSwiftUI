@@ -87,8 +87,10 @@ struct AsyncImage<Placeholder: View>: View {
     // Use StateObject to bind AsyncImage, so view updates when image changes automatically
     // Used StateObject over ObservedObject or EnvironmentObject for view to manage life cycle (?)
     
-    @StateObject private var loader: ImageLoader
+    // TODO: Make ImageLoader private again
+    @StateObject var loader: ImageLoader
     private let placeholder: Placeholder
+    
     
     init(url: URL, @ViewBuilder placeholder: () -> Placeholder) {
         self.placeholder = placeholder()
@@ -111,6 +113,7 @@ struct AsyncImage<Placeholder: View>: View {
             if loader.image != nil {
                 Image(uiImage: loader.image!)
                     .resizable()
+                
             } else {
                 placeholder
             }

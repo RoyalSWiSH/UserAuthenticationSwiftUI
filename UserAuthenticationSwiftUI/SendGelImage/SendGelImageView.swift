@@ -22,7 +22,7 @@ struct SendGelImageView: View {
             list.navigationBarItems(trailing: addButton)
                 .onAppear {
                     print("Navigation View Api().callAPI()")
-                    Api().getGelImageMetaData()
+               //     Api().getGelImageMetaData()
                     
                 }
             

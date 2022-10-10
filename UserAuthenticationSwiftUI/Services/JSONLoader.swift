@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 // iOS 15 check can be removed since target plattform changed to iOS 15, look for better compatibility later
 
@@ -328,7 +329,7 @@ extension GelImageMetaData {
 }
 
 // MARK: - Datum
-struct Data: Codable, Hashable {
+struct BandData: Codable, Hashable {
     let column: Int
     let bpSize: JSONNull?
     let visibility, smear, detection, uid: String
@@ -473,8 +474,19 @@ struct JSONContentUI: View {
     @StateObject var users = Api()
     @StateObject var api = Api()
     
-    let url = URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!
+    @State var image:UIImage = UIImage()
     
+    
+    let url = URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!
+    // TODO: Figure out how to use url
+    var imageLoader = ImageLoaderForPOSTRequest(url:URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!)
+    
+  
+   
+    //var asyncImage = AsyncImage(url: url, placeholder: { Text("Loading ... 123")
+   // })
+    
+
     //@available(iOS 15.0, *)
     //@ObservedObject var response: Response
     
@@ -494,31 +506,62 @@ struct JSONContentUI: View {
         ZStack{
           
             
-        AsyncImage(url: self.url, placeholder: { Text("Loading ... 123")
+        AsyncImage(url: self.url, placeholder: {
+            Text("Loading ... 123")
         })
+        .onReceive(imageLoader.didChange) { data in
+                    self.image = UIImage(data: data) ?? UIImage()
+                    
+                    // TODO: Make this less ugly
+                    api.getGelImageMetaData(fileName: "file", image:self.image)
+                    print("Image was loaded and send in onReceive")
+                    print(data)
+                }
         .aspectRatio(3 / 3, contentMode: .fit)
          //   .frame(minHeight: 300, maxHeight: 600)
          //   .position(x: 200, y: 0)
-        .overlay(ForEach(api.gelAnalysisResponse, id: \.self) { gelImage in
+                .overlay(
+            
+            ForEach(api.gelAnalysisResponse, id: \.self) { gelImage in
                 //  List {
                     //  Text(gelImage.gelImageMetaDataDescription.title)
                // VStack{
+                
                 ForEach(gelImage.bands, id: \.self) { box in
                     
-                Rectangle()
-                        .stroke(lineWidth: 2)
-                        .frame(width: 20, height: 10)
-                        .border(.red)
-                        .foregroundColor(.blue)
-                        .position(x: CGFloat(box.xMin), y: CGFloat(box.yMin))
+//                Rectangle()
+//                        .stroke(lineWidth: 2)
+//                        .frame(width: 20, height: 10)
+//                        .border(.red)
+//                        .foregroundColor(.blue)
+//                        .position(x: CGFloat(box.xMin)/8.4, y: CGFloat(box.yMin)/4.1)
 
                 Text(String(box.yMin))
                         .border(.green)
-                        .position(x: CGFloat(box.xMin), y: CGFloat(box.yMin))
+                        .foregroundColor(.black)
+                        .background(Color.gray.opacity(0.6))
+                        .position(x: CGFloat(box.xMin)/8.4, y: CGFloat(box.yMin)/4.1)
                     }
                   }
              //   }
             )
+//            .onAppear {
+//                    var imageLoader = ImageLoaderForPOSTRequest(url:self.url)
+//
+//                    print("On Appear AsyncImage")
+//                    Image(uiImage: image)
+//                                   .resizable()
+//                                   .aspectRatio(contentMode: .fit)
+//                                   .frame(width:100, height:100)
+//                                   .onReceive(imageLoader.didChange) { data in
+//                                       self.image = UIImage(data: data) ?? UIImage()
+//
+//                                       // TODO: Make this less ugly
+//                                       api.getGelImageMetaData(fileName: "file", image:self.image)
+//                                       print("Image was loaded and send in onReceive")
+//                                   }
+            
+           
             
          // List {
           //  ForEach(api.gelImageMetaData, id: \.self) { gelImage in
@@ -537,8 +580,8 @@ struct JSONContentUI: View {
        //     }
             //}
         
-            
-        }.foregroundColor(.yellow)
+        
+        }.foregroundColor(.black)
         
       
         
@@ -551,18 +594,36 @@ struct JSONContentUI: View {
 //                HStack {
 //                    Text(user.title)
 //                }
-                
             }
         }
         .onAppear {
+            //imageLoader = ImageLoaderForPOSTRequest(url:self.url)
+
+            print("On Appear")
+//            Image(uiImage: image)
+//                           .resizable()
+//                           .aspectRatio(contentMode: .fit)
+//                           .frame(width:100, height:100)
+//                           .onReceive(imageLoader.didChange) { data in
+//                               self.image = UIImage(data: data) ?? UIImage()
+//
+//                               // TODO: Make this less ugly
+//                               api.getGelImageMetaData(fileName: "file", image:self.image)
+//                               print("Image was loaded and send in onReceive")
+//                           }
+        } // onAppear
+            
+            //api.getGelImageMetaData(fileName: "file", imageURL: self.asyncImage.loader.image)
            // users.getGelImageMetaData()
           //  users.fetchJSON()
-            api.getGelImageMetaData()
+            
+          
+           // api.getGelImageMetaData(fileName: "file", image: asy)
             
      
 //            print("Ergebnis Titel")
 //            print(gelimage.gelImageMetaDataDescription.title)
-        }
+      //  }
     } // View
     
    
@@ -591,7 +652,7 @@ struct JSONContentUI: View {
         
         if let decodedResponse = try? JSONDecoder().decode(Response.self, from: data) {
             // Check Array
-            results = [decodedResponse.results]
+            var results = [decodedResponse.results]
             print("LoadData()")
             print(results)
         } // try
@@ -613,11 +674,35 @@ class Api: ObservableObject {
     
     @Published var column: [Column] = []
     
+    @State var image:UIImage = UIImage()
     
-    func getGelImageMetaData() {
+    func getGelImageMetaData(fileName: String, image: UIImage) {
+        
+        
+        let url = URL(string: "http://127.0.0.1:1324/api/v1/electrophoresis/imageanalysis")
+        let boundary = UUID().uuidString
+
+        let session = URLSession.shared
+
+        var urlRequest = URLRequest(url: url!)
+        urlRequest.httpMethod = "POST"
+
+        urlRequest.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        var data = Data()
+        
+        // Add the image data to the raw http request data
+        data.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+        let paramName = "file"
+        data.append("Content-Disposition: form-data; name=\"\(paramName)\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
+        data.append("Content-Type: image/png\r\n\r\n".data(using: .utf8)!)
+        data.append(image.pngData()!)
+        
+        data.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        
         guard let url = URL(string: "http://127.0.0.1:1324/api/v1/electrophoresis/imageanalysis") else { return }
         
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+        session.uploadTask(with: urlRequest, from: data) { data, response, error in
             if let data = data, let string = String(data: data, encoding: .utf8) {
                 print(string)
             
@@ -643,11 +728,10 @@ class Api: ObservableObject {
                 //print(json.gelImageMetaDataDescription.)
             }
             }
-            
-        }
-        task.resume()
+        }.resume()
     }
     
+    // TODO: Delete fetchJSON, since it is a sample request for TODOs to test http requests
     func fetchJSON() {
         guard let url = URL(string: "https://jsonplaceholder.typicode.com/todos/") else { return }
         
@@ -655,7 +739,7 @@ class Api: ObservableObject {
             if let data = data, let string = String(data: data, encoding: .utf8) {
                // print(string)
                 
-               // https://developer.apple.com/documentation/foundation/jsondecoder
+                // https://developer.apple.com/documentation/foundation/jsondecoder
                 // For better debugging uncomment
                 // let json1 = try! JSONDecoder().decode([user].self, from: data)
                 
@@ -686,5 +770,40 @@ struct JSONContentUI_Previews: PreviewProvider {
         } else {
             // Fallback on earlier versions
         }
+    }
+}
+
+extension Data {
+
+    /// Append string to Data
+    ///
+    /// Rather than littering my code with calls to `data(using: .utf8)` to convert `String` values to `Data`, this wraps it in a nice convenient little extension to Data. This defaults to converting using UTF-8.
+    ///
+    /// - parameter string:       The string to be added to the `Data`.
+
+    mutating func append(_ string: String, using encoding: String.Encoding = .utf8) {
+        if let data1 = string.data(using: encoding) {
+            append(data1)
+        }
+    }
+}
+
+class ImageLoaderForPOSTRequest: ObservableObject {
+    var didChange = PassthroughSubject<Data, Never>()
+    var data = Data() {
+        didSet {
+            didChange.send(data)
+        }
+    }
+
+    init(url:URL) {
+
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data else { return }
+            DispatchQueue.main.async {
+                self.data = data
+            }
+        }
+        task.resume()
     }
 }
