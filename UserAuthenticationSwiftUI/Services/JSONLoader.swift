@@ -477,12 +477,14 @@ struct JSONContentUI: View {
     @State var image:UIImage = UIImage()
     
     
-    let url = URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!
-    // TODO: Figure out how to use url
-    var imageLoader = ImageLoaderForPOSTRequest(url:URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!)
-    
-  
+//    let url = URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!
+    // TODO: Figure out how to use url with correct init, then remoce ImageLoaderForPOSTRequest, it is redundant
+//    var imageLoader = ImageLoaderForPOSTRequest(url:URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!)
    
+        let url = URL(string: "https://www.bioinformatics.nl/molbi/SimpleCloningLab/images/GelMovie_gel2.jpg")!
+        // TODO: Figure out how to use url with correct init, then remoce ImageLoaderForPOSTRequest, it is redundant
+        var imageLoader = ImageLoaderForPOSTRequest(url:URL(string: "https://www.bioinformatics.nl/molbi/SimpleCloningLab/images/GelMovie_gel2.jpg")!)
+        
     //var asyncImage = AsyncImage(url: url, placeholder: { Text("Loading ... 123")
    // })
     
@@ -509,13 +511,13 @@ struct JSONContentUI: View {
         AsyncImage(url: self.url, placeholder: {
             Text("Loading ... 123")
         })
+        // TODO: Use imageloader from AsyncImage instead of loading the image for the second time
         .onReceive(imageLoader.didChange) { data in
                     self.image = UIImage(data: data) ?? UIImage()
                     
                     // TODO: Make this less ugly
                     api.getGelImageMetaData(fileName: "file", image:self.image)
                     print("Image was loaded and send in onReceive")
-                    print(data)
                 }
         .aspectRatio(3 / 3, contentMode: .fit)
          //   .frame(minHeight: 300, maxHeight: 600)
@@ -528,7 +530,7 @@ struct JSONContentUI: View {
                // VStack{
                 
                 ForEach(gelImage.bands, id: \.self) { box in
-                    
+// MARK: Visual highlighting of gel bands and band size text formatting
 //                Rectangle()
 //                        .stroke(lineWidth: 2)
 //                        .frame(width: 20, height: 10)
@@ -540,46 +542,14 @@ struct JSONContentUI: View {
                         .border(.green)
                         .foregroundColor(.black)
                         .background(Color.gray.opacity(0.6))
-                        .position(x: CGFloat(box.xMin)/8.4, y: CGFloat(box.yMin)/4.1)
+                    // The divide by 8.4 part are hard coded scale factors to match coordinates from object detection to UI. TODO: Make fit overlay and coordiante transformations universal
+//                        .position(x: CGFloat(box.xMin)/7.2, y: CGFloat(box.yMin)/3.6)
+                        .position(x: CGFloat(box.xMin)/1.2, y: CGFloat(box.yMin))
                     }
                   }
              //   }
             )
-//            .onAppear {
-//                    var imageLoader = ImageLoaderForPOSTRequest(url:self.url)
-//
-//                    print("On Appear AsyncImage")
-//                    Image(uiImage: image)
-//                                   .resizable()
-//                                   .aspectRatio(contentMode: .fit)
-//                                   .frame(width:100, height:100)
-//                                   .onReceive(imageLoader.didChange) { data in
-//                                       self.image = UIImage(data: data) ?? UIImage()
-//
-//                                       // TODO: Make this less ugly
-//                                       api.getGelImageMetaData(fileName: "file", image:self.image)
-//                                       print("Image was loaded and send in onReceive")
-//                                   }
-            
-           
-            
-         // List {
-          //  ForEach(api.gelImageMetaData, id: \.self) { gelImage in
-              //  List {
-                   // Text(gelImage.gelImageMetaDataDescription.title)
-//                    Rectangle()
-//                            .stroke(lineWidth: 3)
-//                            .size(CGSize(width: 20, height: 10))
-//                            .foregroundColor(.blue)
-//                            .position(x: CGFloat(200), y: 200)
-          //      }
-//                ForEach(gelImage.data, id:\.self) { gelImageBand in
-//                        print("hello")
-         //    }
-                
-       //     }
-            //}
-        
+
         
         }.foregroundColor(.black)
         
@@ -596,38 +566,10 @@ struct JSONContentUI: View {
 //                }
             }
         }
-        .onAppear {
-            //imageLoader = ImageLoaderForPOSTRequest(url:self.url)
-
-            print("On Appear")
-//            Image(uiImage: image)
-//                           .resizable()
-//                           .aspectRatio(contentMode: .fit)
-//                           .frame(width:100, height:100)
-//                           .onReceive(imageLoader.didChange) { data in
-//                               self.image = UIImage(data: data) ?? UIImage()
-//
-//                               // TODO: Make this less ugly
-//                               api.getGelImageMetaData(fileName: "file", image:self.image)
-//                               print("Image was loaded and send in onReceive")
-//                           }
-        } // onAppear
-            
-            //api.getGelImageMetaData(fileName: "file", imageURL: self.asyncImage.loader.image)
-           // users.getGelImageMetaData()
-          //  users.fetchJSON()
-            
-          
-           // api.getGelImageMetaData(fileName: "file", image: asy)
-            
-     
-//            print("Ergebnis Titel")
-//            print(gelimage.gelImageMetaDataDescription.title)
-      //  }
     } // View
     
    
-    
+    // TODO: This was a test to load data with async. Remove.
     func callAPI() {
         guard let url = URL(string: "https://www.google.de") else { return }
         
@@ -642,6 +584,7 @@ struct JSONContentUI: View {
     
     
     @available(iOS 15.0, *)
+    // TODO: This was a test to load data with async. Remove.
     func loadData() async {
         guard let url = URL(string: "https://google.de") else {
             print("Invalid URL")
@@ -652,7 +595,7 @@ struct JSONContentUI: View {
         
         if let decodedResponse = try? JSONDecoder().decode(Response.self, from: data) {
             // Check Array
-            var results = [decodedResponse.results]
+            let results = [decodedResponse.results]
             print("LoadData()")
             print(results)
         } // try
@@ -664,6 +607,7 @@ struct JSONContentUI: View {
 
 
 // Why Observable Object? Call this ViewModel?
+// TODO: Rename Api to something more useful
 class Api: ObservableObject {
     // To automatically update the view when model changes, initiate a published empty array of users
     @Published var users: [user] = []
@@ -700,8 +644,6 @@ class Api: ObservableObject {
         
         data.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
         
-        guard let url = URL(string: "http://127.0.0.1:1324/api/v1/electrophoresis/imageanalysis") else { return }
-        
         session.uploadTask(with: urlRequest, from: data) { data, response, error in
             if let data = data, let string = String(data: data, encoding: .utf8) {
                 print(string)
@@ -716,11 +658,6 @@ class Api: ObservableObject {
                       print(json.meta.title)
                       print("Koordinaten yMin:")
                       print(json.bands[0].yMin)
-                   // self.gelImageMetaData.append(json)
-//                    print("Ergebnis Titel")
-//                    print(json.gelImageMetaDataDescription.title)
-//                    print("Visibility")
-//                    print(json.data[0].path)
                     //return json
                 }
             } catch {
@@ -736,7 +673,7 @@ class Api: ObservableObject {
         guard let url = URL(string: "https://jsonplaceholder.typicode.com/todos/") else { return }
         
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            if let data = data, let string = String(data: data, encoding: .utf8) {
+            if let data = data, let _ = String(data: data, encoding: .utf8) {
                // print(string)
                 
                 // https://developer.apple.com/documentation/foundation/jsondecoder
@@ -788,7 +725,9 @@ extension Data {
     }
 }
 
+// Load an image from URL. Redundant to AsyncImage, but don't know how to receive the UIImage from there
 class ImageLoaderForPOSTRequest: ObservableObject {
+    // PassthroughSubject is a Combine object
     var didChange = PassthroughSubject<Data, Never>()
     var data = Data() {
         didSet {
