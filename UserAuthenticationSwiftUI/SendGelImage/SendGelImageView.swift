@@ -19,35 +19,38 @@ struct SendGelImageView: View {
     var body: some View {
         
         NavigationView {
-            list.navigationBarItems(trailing: addButton)
-                .onAppear {
-                    print("Navigation View Api().callAPI()")
-               //     Api().getGelImageMetaData()
-                    
-                }
-            
-            if #available(iOS 15.0, *) {
-                JSONContentUI()
-            } else {
-                // Fallback on earlier versions
-            }
+//            list.navigationBarItems(trailing: addButton)
+//                .onAppear {
+//                    print("Navigation View Api().callAPI()")
+//               //     Api().getGelImageMetaData()
+//
+//                }
+            // Why do I need to inser the view here twice??
+            JSONContentUI()
+            //JSONContentUI()
+//            if #available(iOS 15.0, *) {
+//                JSONContentUI()
+//            } else {
+//                JSONContentUI()
+//                // Fallback on earlier versions
+//            }
         }
     }
         
     
-        private var list: some View {
-            List(0..<numberofRows, id: \.self) { _ in
-            AsyncImage(url: self.url, placeholder: { Text("Loading ... 123") })
-                .aspectRatio(2 / 3, contentMode: .fit)
-                .frame(minHeight: 200, maxHeight: 200)
-                
-          
-            }
-        }
-        
-    private var addButton: some View {
-        Button(action: { self.numberofRows += 1}) {Image(systemName: "plus")}
-    }
+//        private var list: some View {
+//            List(0..<numberofRows, id: \.self) { _ in
+//            AsyncImage(url: self.url, placeholder: { Text("Loading ... 123") })
+//                .aspectRatio(2 / 3, contentMode: .fit)
+//                .frame(minHeight: 200, maxHeight: 200)
+//
+//
+//            }
+//        }
+//
+//    private var addButton: some View {
+//        Button(action: { self.numberofRows += 1}) {Image(systemName: "plus")}
+//    }
 //        VStack {
 //
 //            AsyncImage(url: url, placeholder: { Text("Loading ... 123") })

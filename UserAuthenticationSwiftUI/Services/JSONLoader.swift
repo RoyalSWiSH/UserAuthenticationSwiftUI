@@ -476,15 +476,15 @@ struct JSONContentUI: View {
     
     @State var image:UIImage = UIImage()
     
-    
-//    let url = URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!
-    // TODO: Figure out how to use url with correct init, then remoce ImageLoaderForPOSTRequest, it is redundant
-//    var imageLoader = ImageLoaderForPOSTRequest(url:URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!)
-   
-        let url = URL(string: "https://www.bioinformatics.nl/molbi/SimpleCloningLab/images/GelMovie_gel2.jpg")!
-        // TODO: Figure out how to use url with correct init, then remoce ImageLoaderForPOSTRequest, it is redundant
-        var imageLoader = ImageLoaderForPOSTRequest(url:URL(string: "https://www.bioinformatics.nl/molbi/SimpleCloningLab/images/GelMovie_gel2.jpg")!)
-        
+
+    let url = URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!
+//     TODO: Figure out how to use url with correct init, then remoce ImageLoaderForPOSTRequest, it is redundant
+    var imageLoader = ImageLoaderForPOSTRequest(url:URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!)
+//
+//        let url = URL(string: "https://www.bioinformatics.nl/molbi/SimpleCloningLab/images/GelMovie_gel2.jpg")!
+//        // TODO: Figure out how to use url with correct init, then remoce ImageLoaderForPOSTRequest, it is redundant
+//        var imageLoader = ImageLoaderForPOSTRequest(url:URL(string: "https://www.bioinformatics.nl/molbi/SimpleCloningLab/images/GelMovie_gel2.jpg")!)
+
     //var asyncImage = AsyncImage(url: url, placeholder: { Text("Loading ... 123")
    // })
     
@@ -492,8 +492,25 @@ struct JSONContentUI: View {
     //@available(iOS 15.0, *)
     //@ObservedObject var response: Response
     
-    @available(iOS 15.0, *)
+
+    // Functions to adjust the positioning in overlay to the screen resized image
+    // TODO: Get px height of image
+    func getResizeAdjustedHorizontalPostition(geo: GeometryProxy, box: Band, imageWidth: Double) -> CGFloat {
+       // print(imageWidth)
+//        return CGFloat((box.xMax - box.xMin)/2)*(geo.size.width / 2872)
+//        return CGFloat((CGFloat(box.xMax - box.xMin))/2.0)*0.7
+        
+        return CGFloat(CGFloat((box.xMin+box.xMax)/2) * (geo.size.width / imageWidth))
+//        return geo.size.width
+    }
     
+    func getResizeAdjustedVerticalPostition(geo: GeometryProxy, box: Band, imageHeight: Double) -> CGFloat {
+        return CGFloat(CGFloat((box.yMin+box.yMax)/2) * (geo.size.height / (imageHeight)))
+
+    }
+
+
+    @available(iOS 15.0, *)
     var body: some View {
 //        List(results, id: \.id) { item in
 //            VStack(alignment: .leading) {
@@ -505,9 +522,10 @@ struct JSONContentUI: View {
 //        .task {
 //            await loadData()
 //        }
-        ZStack{
-          
-            
+       
+       ZStack{
+
+                
         AsyncImage(url: self.url, placeholder: {
             Text("Loading ... 123")
         })
@@ -518,11 +536,14 @@ struct JSONContentUI: View {
                     // TODO: Make this less ugly
                     api.getGelImageMetaData(fileName: "file", image:self.image)
                     print("Image was loaded and send in onReceive")
-                }
-        .aspectRatio(3 / 3, contentMode: .fit)
-         //   .frame(minHeight: 300, maxHeight: 600)
+                //  print(geo.size.width)
+                } // onReceive
+//          .aspectRatio(3 / 3, contentMode: .fit)
+        .clipped()
+         //  .frame(minHeight: 300, maxHeight: 600)
          //   .position(x: 200, y: 0)
                 .overlay(
+                    GeometryReader { geo in
             
             ForEach(api.gelAnalysisResponse, id: \.self) { gelImage in
                 //  List {
@@ -537,36 +558,46 @@ struct JSONContentUI: View {
 //                        .border(.red)
 //                        .foregroundColor(.blue)
 //                        .position(x: CGFloat(box.xMin)/8.4, y: CGFloat(box.yMin)/4.1)
-
+                    
                 Text(String(box.yMin))
                         .border(.green)
                         .foregroundColor(.black)
                         .background(Color.gray.opacity(0.6))
                     // The divide by 8.4 part are hard coded scale factors to match coordinates from object detection to UI. TODO: Make fit overlay and coordiante transformations universal
 //                        .position(x: CGFloat(box.xMin)/7.2, y: CGFloat(box.yMin)/3.6)
-                        .position(x: CGFloat(box.xMin)/1.2, y: CGFloat(box.yMin))
-                    }
-                  }
+                        .position(x: getResizeAdjustedHorizontalPostition(geo: geo, box: box, imageWidth: self.image.size.width), y: getResizeAdjustedVerticalPostition(geo: geo, box: box, imageHeight: self.image.size.height))
+//                      .position(x: CGFloat((box.xMin + box.xMax)/2), y: CGFloat((box.yMin + box.yMax)/2))
+                     //   .frame(width: 20, height: 10)
+                       // .offset(x: 10, y: 0)
+                    } // ForEach
+                  }  // ForEach
              //   }
-            )
+                    }
+                ) // .overlay
+               .scaledToFit()
+              
+              //  .scaledToFill()
+                
+            
+       }.foregroundColor(.black)
+            .scaledToFit()
 
+       
         
-        }.foregroundColor(.black)
-        
-      
-        
-        List {
-            ForEach(users.gelImageMetaData, id: \.self) { gelImage in
-                HStack {
-                    Text(gelImage.gelImageMetaDataDescription.title)
-                }
-//            ForEach(users.users, id: \.self) { user in
+//        List {
+//            ForEach(users.gelImageMetaData, id: \.self) { gelImage in
 //                HStack {
-//                    Text(user.title)
+//                    Text(gelImage.gelImageMetaDataDescription.title)
 //                }
-            }
-        }
-    } // View
+////            ForEach(users.users, id: \.self) { user in
+////                HStack {
+////                    Text(user.title)
+////                }
+//            }
+//        } // List
+   //     } // zstack
+       //.border(.black)
+} // View
     
    
     // TODO: This was a test to load data with async. Remove.
@@ -620,6 +651,7 @@ class Api: ObservableObject {
     
     @State var image:UIImage = UIImage()
     
+    // POST Request with image
     func getGelImageMetaData(fileName: String, image: UIImage) {
         
         
@@ -729,6 +761,7 @@ extension Data {
 class ImageLoaderForPOSTRequest: ObservableObject {
     // PassthroughSubject is a Combine object
     var didChange = PassthroughSubject<Data, Never>()
+    // what happens here?
     var data = Data() {
         didSet {
             didChange.send(data)
@@ -739,6 +772,7 @@ class ImageLoaderForPOSTRequest: ObservableObject {
 
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data else { return }
+            // Why use DispatchQueue here?
             DispatchQueue.main.async {
                 self.data = data
             }
