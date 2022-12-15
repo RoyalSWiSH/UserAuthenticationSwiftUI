@@ -477,13 +477,13 @@ struct JSONContentUI: View {
     @State var image:UIImage = UIImage()
     
 
-    let url = URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!
-//     TODO: Figure out how to use url with correct init, then remoce ImageLoaderForPOSTRequest, it is redundant
-    var imageLoader = ImageLoaderForPOSTRequest(url:URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!)
-//
-//        let url = URL(string: "https://www.bioinformatics.nl/molbi/SimpleCloningLab/images/GelMovie_gel2.jpg")!
-//        // TODO: Figure out how to use url with correct init, then remoce ImageLoaderForPOSTRequest, it is redundant
-//        var imageLoader = ImageLoaderForPOSTRequest(url:URL(string: "https://www.bioinformatics.nl/molbi/SimpleCloningLab/images/GelMovie_gel2.jpg")!)
+//    let url = URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!
+////     TODO: Figure out how to use url with correct init, then remoce ImageLoaderForPOSTRequest, it is redundant
+//    var imageLoader = ImageLoaderForPOSTRequest(url:URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!)
+////
+        let url = URL(string: "https://www.bioinformatics.nl/molbi/SimpleCloningLab/images/GelMovie_gel2.jpg")!
+        // TODO: Figure out how to use url with correct init, then remoce ImageLoaderForPOSTRequest, it is redundant
+        var imageLoader = ImageLoaderForPOSTRequest(url:URL(string: "https://www.bioinformatics.nl/molbi/SimpleCloningLab/images/GelMovie_gel2.jpg")!)
 
     //var asyncImage = AsyncImage(url: url, placeholder: { Text("Loading ... 123")
    // })
@@ -507,6 +507,10 @@ struct JSONContentUI: View {
     func getResizeAdjustedVerticalPostition(geo: GeometryProxy, box: Band, imageHeight: Double) -> CGFloat {
         return CGFloat(CGFloat((box.yMin+box.yMax)/2) * (geo.size.height / (imageHeight)))
 
+    }
+    
+    func transformPixelToBasePairs(yPositionInPixels: Int) -> Double {
+        return Double(yPositionInPixels*3+100)
     }
 
 
@@ -536,20 +540,12 @@ struct JSONContentUI: View {
                     // TODO: Make this less ugly
                     api.getGelImageMetaData(fileName: "file", image:self.image)
                     print("Image was loaded and send in onReceive")
-                //  print(geo.size.width)
                 } // onReceive
-//          .aspectRatio(3 / 3, contentMode: .fit)
-        .clipped()
-         //  .frame(minHeight: 300, maxHeight: 600)
-         //   .position(x: 200, y: 0)
                 .overlay(
                     GeometryReader { geo in
             
             ForEach(api.gelAnalysisResponse, id: \.self) { gelImage in
-                //  List {
-                    //  Text(gelImage.gelImageMetaDataDescription.title)
-               // VStack{
-                
+
                 ForEach(gelImage.bands, id: \.self) { box in
 // MARK: Visual highlighting of gel bands and band size text formatting
 //                Rectangle()
@@ -558,27 +554,23 @@ struct JSONContentUI: View {
 //                        .border(.red)
 //                        .foregroundColor(.blue)
 //                        .position(x: CGFloat(box.xMin)/8.4, y: CGFloat(box.yMin)/4.1)
-                    
-                Text(String(box.yMin))
+                    // Convert position from pixel into base pairs and round them. Error in a gel 10 bp?
+                    let yPosition = box.yMin
+                    let basePairSize:Double = transformPixelToBasePairs(yPositionInPixels: yPosition)
+                    let roundedBasePairSize: Int = Int( round(basePairSize*10)/10)
+                    Text(String(roundedBasePairSize))
                         .border(.green)
                         .foregroundColor(.black)
                         .background(Color.gray.opacity(0.6))
-                    // The divide by 8.4 part are hard coded scale factors to match coordinates from object detection to UI. TODO: Make fit overlay and coordiante transformations universal
-//                        .position(x: CGFloat(box.xMin)/7.2, y: CGFloat(box.yMin)/3.6)
+                    // The divide by 8.4 part are hard coded scale factors to match coordinates from object detection to UI. TODO: Make fit overlay and coordiante transformations universal - 29. Okt 2022 DONE
                         .position(x: getResizeAdjustedHorizontalPostition(geo: geo, box: box, imageWidth: self.image.size.width), y: getResizeAdjustedVerticalPostition(geo: geo, box: box, imageHeight: self.image.size.height))
-//                      .position(x: CGFloat((box.xMin + box.xMax)/2), y: CGFloat((box.yMin + box.yMax)/2))
-                     //   .frame(width: 20, height: 10)
-                       // .offset(x: 10, y: 0)
+                        
                     } // ForEach
                   }  // ForEach
-             //   }
                     }
                 ) // .overlay
                .scaledToFit()
               
-              //  .scaledToFill()
-                
-            
        }.foregroundColor(.black)
             .scaledToFit()
 
@@ -655,7 +647,8 @@ class Api: ObservableObject {
     func getGelImageMetaData(fileName: String, image: UIImage) {
         
         
-        let url = URL(string: "http://127.0.0.1:1324/api/v1/electrophoresis/imageanalysis")
+       // let url = URL(string: "http://127.0.0.1:1324/api/v1/electrophoresis/imageanalysis")
+        let url = URL(string: "http://167.172.190.93:1324/api/v1/electrophoresis/imageanalysis")
         let boundary = UUID().uuidString
 
         let session = URLSession.shared
