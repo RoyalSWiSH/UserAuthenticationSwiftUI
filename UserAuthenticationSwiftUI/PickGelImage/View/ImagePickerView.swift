@@ -20,12 +20,14 @@ struct ImagePickerView: View {
     
     @State var selectedImage: Image? = Image("")
     
+    // List of selected media Items (.photo, .video or .livePhoto) to display
     @ObservedObject var mediaItems = PickedMediaItems()
     
     var configuration = PHPickerConfiguration(photoLibrary: PHPhotoLibrary.shared())
     
     var body: some View {
         NavigationView {
+            // Display selected Images from mediaItems in a List. Item is an element in mediaItems
             List(mediaItems.items, id: \.id) { item in
                 ZStack(alignment: .topLeading) {
                     if item.mediaType == .photo {
@@ -44,7 +46,7 @@ struct ImagePickerView: View {
                             // TODO: Add new File LivePhotoView and outcomment
                    //     } else { EmptyView() }
                     }
-
+                    // Symbol image in upper left corner to display media type
                     Image(systemName: getMediaImageName(using: item))
                         .resizable()
                         .aspectRatio(contentMode: .fit)
@@ -60,12 +62,14 @@ struct ImagePickerView: View {
             }, label: {
                 Image(systemName: "trash")
                     .foregroundColor(.red)
+                    // + Button that triggers state showImagePicker to become true and select photos from library
             }), trailing: Button(action: {
                 showImagePicker = true
             }, label: {
                 Image(systemName: "plus")
             }))
             }
+        // Present a popover with a PhotoPicker (as defined in struct below) (why send mediaItems as argument?, what does didSelectItem? Handler after selection is finished?
     .sheet(isPresented: $showImagePicker, content: {
         PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
             showImagePicker = false
@@ -88,7 +92,7 @@ struct SwiftUIView_Previews: PreviewProvider {
     }
 }
 
-
+// PhotoPicker is view in popover to select images from library
 struct PhotoPicker: UIViewControllerRepresentable {
   
     
@@ -99,6 +103,7 @@ struct PhotoPicker: UIViewControllerRepresentable {
     
     
     func makeUIViewController(context: Context) -> PHPickerViewController {
+    // Create config which type and how many images can be selected
     var config = PHPickerConfiguration()
         config.filter = .any(of: [.images, .videos, .livePhotos])
     config.selectionLimit = 0
@@ -112,7 +117,7 @@ struct PhotoPicker: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {
         
     }
-    
+    // ?
     func makeCoordinator() -> Coordinator {
         Coordinator(with: self)
     }

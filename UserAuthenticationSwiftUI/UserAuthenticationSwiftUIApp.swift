@@ -38,8 +38,8 @@ struct UserAuthenticationSwiftUIApp: App {
                         .environmentObject(sessionService)
                 case .loggedOut:
                     //LoginView()
-                   // ImagePickerView()
-                    SendGelImageView(image: imageData, response: response)
+                    ImagePickerView()
+                  //  SendGelImageView(image: imageData, response: response)
                 }
             } // NavigationView
         } // WindowGroup

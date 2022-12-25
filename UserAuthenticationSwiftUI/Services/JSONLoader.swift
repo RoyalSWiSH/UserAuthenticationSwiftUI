@@ -464,6 +464,16 @@ struct BoxCoord: Codable, Hashable {
     let position_y2: Int
 }
 
+struct PixelToBasePairArray: Codable, Hashable {
+    var yPixel: Int
+    var basePair: Int
+}
+
+enum FittingError: Error {
+    case ArraySizesInequal
+    
+}
+
 // View to show data from API request in UI
 @available(iOS 15.0, *)
 struct JSONContentUI: View {
@@ -475,6 +485,14 @@ struct JSONContentUI: View {
     @StateObject var api = Api()
     
     @State var image:UIImage = UIImage()
+    
+    // State to handle popover to set band sizes for reference ladder
+    @State private var showPopover:[Bool] = [false]
+    @State private var showPopover2:Bool = false
+    
+    // Sample data for initialization
+    @State private var selectedBandItem:Band = Band(column: 1, bpSize: 100, intensity: "low", smear: "low", xid: "342qwasdf", confidence:1.0, xMin: 200, yMin: 100, xMax: 240, yMax: 140)
+    @State private var pixelToBasepairReference: [PixelToBasePairArray] = [PixelToBasePairArray(yPixel: 0, basePair: 0)]
     
 
 //    let url = URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!
@@ -495,26 +513,64 @@ struct JSONContentUI: View {
 
     // Functions to adjust the positioning in overlay to the screen resized image
     // TODO: Get px height of image
-    func getResizeAdjustedHorizontalPostition(geo: GeometryProxy, box: Band, imageWidth: Double) -> CGFloat {
+    func getResizeAdjustedHorizontalPostition(geo: GeometryProxy, band: Band, imageWidth: Double) -> CGFloat {
        // print(imageWidth)
 //        return CGFloat((box.xMax - box.xMin)/2)*(geo.size.width / 2872)
 //        return CGFloat((CGFloat(box.xMax - box.xMin))/2.0)*0.7
         
-        return CGFloat(CGFloat((box.xMin+box.xMax)/2) * (geo.size.width / imageWidth))
+        return CGFloat(CGFloat((band.xMin+band.xMax)/2) * (geo.size.width / imageWidth))
 //        return geo.size.width
     }
     
-    func getResizeAdjustedVerticalPostition(geo: GeometryProxy, box: Band, imageHeight: Double) -> CGFloat {
-        return CGFloat(CGFloat((box.yMin+box.yMax)/2) * (geo.size.height / (imageHeight)))
+    func getResizeAdjustedVerticalPostition(geo: GeometryProxy, band: Band, imageHeight: Double) -> CGFloat {
+        return CGFloat(CGFloat((band.yMin+band.yMax)/2) * (geo.size.height / (imageHeight)))
 
     }
     
-    func transformPixelToBasePairs(yPositionInPixels: Int) -> Double {
-        return Double(yPositionInPixels*3+100)
+    func transformPixelToBasePairs(yPositionInPixels: Int, pixelToBasePairReference: [PixelToBasePairArray]) -> Double {
+//
+//        if pixelToBasePairReference.count != xArray.count {
+//            print("X and Y arrays don't have the same size")
+//            throw FittingError.ArraySizesInequal
+//        }
+        
+  
+        if pixelToBasePairReference.count > 1 {
+            
+            let max_y = pixelToBasePairReference.map { $0.yPixel }.max()
+            let min_y = pixelToBasePairReference.map { $0.yPixel }.min()
+            
+            let delta_y = Double(max_y! - min_y!)
+            
+            //TOOD: Get Index of max value
+            
+            let max_basePair = pixelToBasePairReference.map { $0.basePair}.max()
+            let min_basePair = pixelToBasePairReference.map { $0.basePair}.min()
+            
+            let delta_basePair = Double(max_basePair! - min_basePair!)
+            
+            let slope = delta_basePair/delta_y
+            
+            return linearMappingFromPixelToBasePair(yPositionInPixels:
+               yPositionInPixels, slope: slope, yCross: 0)
+        }
+        else {
+            return Double(yPositionInPixels)
+        }
+    }
+    
+    func linearMappingFromPixelToBasePair(yPositionInPixels: Int, slope: Double, yCross: Double) -> Double {
+        // Linear mapping of pixels to base pairs. This is a very simplistic way to calculate this. Better linear regression, which requires CreateML and an M1 Chip.
+        // yPositionInPixels: Position of the band on the image in pixels
+        // slope: Gradient to transform pixels into basepairs
+        // yCross: Crossing of slope with y-axis
+        return Double(Double(yPositionInPixels)*slope+yCross)
     }
 
 
     @available(iOS 15.0, *)
+    
+    
     var body: some View {
 //        List(results, id: \.id) { item in
 //            VStack(alignment: .leading) {
@@ -526,7 +582,18 @@ struct JSONContentUI: View {
 //        .task {
 //            await loadData()
 //        }
-       
+        VStack{
+            
+        
+        Button("Show Menu") {showPopover2 = true}
+        .popover(isPresented: $showPopover2) {
+            Text("Convert reference band at position " + String(linearMappingFromPixelToBasePair(yPositionInPixels: selectedBandItem.yMin, slope: 1.0, yCross: 0.0)) + "px to base pairs").font(.headline).padding()
+            // Better way to unwrap .last instead of !?
+            TextField("What size does this band have?",  value: $pixelToBasepairReference.last!.basePair, format: .number)
+            // Show array of base pair sizes for the reference ladder
+            Text("Ladder Px: " + (pixelToBasepairReference.map{element in String(element.yPixel)}.joined(separator: ",")))
+            Text("Ladder Bp: " + (pixelToBasepairReference.map{element in String(element.basePair)}.joined(separator: ",")))
+        }
        ZStack{
 
                 
@@ -542,11 +609,13 @@ struct JSONContentUI: View {
                     print("Image was loaded and send in onReceive")
                 } // onReceive
                 .overlay(
+                    // Overlay of gel bands
                     GeometryReader { geo in
-            
+                        
+            // This loop probably just has one item?!
             ForEach(api.gelAnalysisResponse, id: \.self) { gelImage in
 
-                ForEach(gelImage.bands, id: \.self) { box in
+                ForEach(gelImage.bands, id: \.self) { band in
 // MARK: Visual highlighting of gel bands and band size text formatting
 //                Rectangle()
 //                        .stroke(lineWidth: 2)
@@ -554,16 +623,52 @@ struct JSONContentUI: View {
 //                        .border(.red)
 //                        .foregroundColor(.blue)
 //                        .position(x: CGFloat(box.xMin)/8.4, y: CGFloat(box.yMin)/4.1)
+                    
+                   
+                    
+                    
                     // Convert position from pixel into base pairs and round them. Error in a gel 10 bp?
-                    let yPosition = box.yMin
-                    let basePairSize:Double = transformPixelToBasePairs(yPositionInPixels: yPosition)
+                    
+                   
+                    let yPosition = band.yMin
+                    
+                    let basePairSize:Double = transformPixelToBasePairs(yPositionInPixels: yPosition, pixelToBasePairReference: pixelToBasepairReference)
+                    
+                  
+                    
                     let roundedBasePairSize: Int = Int( round(basePairSize*10)/10)
                     Text(String(roundedBasePairSize))
                         .border(.green)
                         .foregroundColor(.black)
+                        .font(.system(size: 12, weight: .light, design: .serif))
+                       // .margin(top: 32, bottom: 8, left: 16, right: 16)
                         .background(Color.gray.opacity(0.6))
+                        .onAppear() {
+                            // initialize popover state
+                            self.showPopover.append(false)
+                        }
+                        .onTapGesture(count: 2) {
+                            print("Double tapped!")
+                            self.showPopover[0] = true
+                            showPopover2 = true
+                            
+                            selectedBandItem = band
+                            let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
+                            pixelToBasepairReference.append(a)
+                            //bpSize.append(box.bpSize)
+                        }
+                        .onLongPressGesture {
+                                print("Long pressed!")
+                        }
+//                        .popover(isPresented:  $showPopover2) {
+////                        .popover(isPresented: self.$showPopover[0]) {
+//                                    Text("Your content here")
+//                                        .font(.headline)
+//                                        .padding()
+//                                }
+//                        .popover(isPresented: self.$showPopover[0])
                     // The divide by 8.4 part are hard coded scale factors to match coordinates from object detection to UI. TODO: Make fit overlay and coordiante transformations universal - 29. Okt 2022 DONE
-                        .position(x: getResizeAdjustedHorizontalPostition(geo: geo, box: box, imageWidth: self.image.size.width), y: getResizeAdjustedVerticalPostition(geo: geo, box: box, imageHeight: self.image.size.height))
+                        .position(x: getResizeAdjustedHorizontalPostition(geo: geo, band: band, imageWidth: self.image.size.width), y: getResizeAdjustedVerticalPostition(geo: geo, band: band, imageHeight: self.image.size.height))
                         
                     } // ForEach
                   }  // ForEach
@@ -574,7 +679,7 @@ struct JSONContentUI: View {
        }.foregroundColor(.black)
             .scaledToFit()
 
-       
+    }
         
 //        List {
 //            ForEach(users.gelImageMetaData, id: \.self) { gelImage in
