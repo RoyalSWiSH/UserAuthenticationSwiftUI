@@ -22,7 +22,6 @@ class Response: Codable, ObservableObject {
     }
 }
 
-
 // This file was generated from JSON Schema using quicktype, do not modify it directly.
 // To parse the JSON, add this file to your project and do:
 //
@@ -108,7 +107,6 @@ struct GelImage: Codable, Hashable {
         case filename = "filename"
         case xid = "xid"
     }
-    
 }
 
 struct ExperimentalMethod: Codable, Hashable {
@@ -481,9 +479,11 @@ struct JSONContentUI: View {
     //Check Array
     @State private var results =  [Result]()
     
-    @StateObject var users = Api()
+    // @StateObject var users = Api()
+    // Take an image and make a POST request
     @StateObject var api = Api()
     
+    // Image used to send as POST request
     @State var image:UIImage = UIImage()
     
     // State to handle popover to set band sizes for reference ladder
@@ -499,27 +499,22 @@ struct JSONContentUI: View {
 ////     TODO: Figure out how to use url with correct init, then remoce ImageLoaderForPOSTRequest, it is redundant
 //    var imageLoader = ImageLoaderForPOSTRequest(url:URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!)
 ////
+    ///url used to load image in AsyncImage for UI display
         let url = URL(string: "https://www.bioinformatics.nl/molbi/SimpleCloningLab/images/GelMovie_gel2.jpg")!
         // TODO: Figure out how to use url with correct init, then remoce ImageLoaderForPOSTRequest, it is redundant
+        // load the same image to use in POST request
         var imageLoader = ImageLoaderForPOSTRequest(url:URL(string: "https://www.bioinformatics.nl/molbi/SimpleCloningLab/images/GelMovie_gel2.jpg")!)
 
     //var asyncImage = AsyncImage(url: url, placeholder: { Text("Loading ... 123")
-   // })
+    // })
     
-
-    //@available(iOS 15.0, *)
-    //@ObservedObject var response: Response
     
 
     // Functions to adjust the positioning in overlay to the screen resized image
     // TODO: Get px height of image
     func getResizeAdjustedHorizontalPostition(geo: GeometryProxy, band: Band, imageWidth: Double) -> CGFloat {
-       // print(imageWidth)
-//        return CGFloat((box.xMax - box.xMin)/2)*(geo.size.width / 2872)
-//        return CGFloat((CGFloat(box.xMax - box.xMin))/2.0)*0.7
         
         return CGFloat(CGFloat((band.xMin+band.xMax)/2) * (geo.size.width / imageWidth))
-//        return geo.size.width
     }
     
     func getResizeAdjustedVerticalPostition(geo: GeometryProxy, band: Band, imageHeight: Double) -> CGFloat {
@@ -528,11 +523,6 @@ struct JSONContentUI: View {
     }
     
     func transformPixelToBasePairs(yPositionInPixels: Int, pixelToBasePairReference: [PixelToBasePairArray]) -> Double {
-//
-//        if pixelToBasePairReference.count != xArray.count {
-//            print("X and Y arrays don't have the same size")
-//            throw FittingError.ArraySizesInequal
-//        }
         
   
         if pixelToBasePairReference.count > 1 {
@@ -595,7 +585,6 @@ struct JSONContentUI: View {
             Text("Ladder Bp: " + (pixelToBasepairReference.map{element in String(element.basePair)}.joined(separator: ",")))
         }
        ZStack{
-
                 
         AsyncImage(url: self.url, placeholder: {
             Text("Loading ... 123")
@@ -604,15 +593,17 @@ struct JSONContentUI: View {
         .onReceive(imageLoader.didChange) { data in
                     self.image = UIImage(data: data) ?? UIImage()
                     
+                    // Make call to API with the image loaded
                     // TODO: Make this less ugly
                     api.getGelImageMetaData(fileName: "file", image:self.image)
                     print("Image was loaded and send in onReceive")
-                } // onReceive
-                .overlay(
-                    // Overlay of gel bands
-                    GeometryReader { geo in
+        } // onReceive
+        .overlay(
+        // Overlay of gel bands
+            GeometryReader { geo in
                         
-            // This loop probably just has one item?!
+            // This loop probably just has one item? Yes, but it could load multiple requests, for now gelAnalysisResponse is an array.
+            // Loop through all API responses and then draw a box with the size of each band
             ForEach(api.gelAnalysisResponse, id: \.self) { gelImage in
 
                 ForEach(gelImage.bands, id: \.self) { band in
@@ -625,8 +616,6 @@ struct JSONContentUI: View {
 //                        .position(x: CGFloat(box.xMin)/8.4, y: CGFloat(box.yMin)/4.1)
                     
                    
-                    
-                    
                     // Convert position from pixel into base pairs and round them. Error in a gel 10 bp?
                     
                    
@@ -634,9 +623,8 @@ struct JSONContentUI: View {
                     
                     let basePairSize:Double = transformPixelToBasePairs(yPositionInPixels: yPosition, pixelToBasePairReference: pixelToBasepairReference)
                     
-                  
                     
-                    let roundedBasePairSize: Int = Int( round(basePairSize*10)/10)
+                    let roundedBasePairSize: Int = Int( round(basePairSize*10)/10 )
                     Text(String(roundedBasePairSize))
                         .border(.green)
                         .foregroundColor(.black)
@@ -655,7 +643,6 @@ struct JSONContentUI: View {
                             selectedBandItem = band
                             let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
                             pixelToBasepairReference.append(a)
-                            //bpSize.append(box.bpSize)
                         }
                         .onLongPressGesture {
                                 print("Long pressed!")
@@ -698,39 +685,39 @@ struct JSONContentUI: View {
     
    
     // TODO: This was a test to load data with async. Remove.
-    func callAPI() {
-        guard let url = URL(string: "https://www.google.de") else { return }
-        
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            if let data = data, let string = String(data: data, encoding: .utf8) {
-                print(string)
-               
-            }
-        }
-        task.resume()
-    }
+//    func callAPI() {
+//        guard let url = URL(string: "https://www.google.de") else { return }
+//
+//        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+//            if let data = data, let string = String(data: data, encoding: .utf8) {
+//                print(string)
+//
+//            }
+//        }
+//        task.resume()
+//    }
+//
     
-    
-    @available(iOS 15.0, *)
+//    @available(iOS 15.0, *)
     // TODO: This was a test to load data with async. Remove.
-    func loadData() async {
-        guard let url = URL(string: "https://google.de") else {
-            print("Invalid URL")
-            return }
-        do {
-            // This line requires iOS 15, so changed min iOS to 15, change later for backward compatibility
-        let (data, _) = try await URLSession.shared.data(from: url)
-        
-        if let decodedResponse = try? JSONDecoder().decode(Response.self, from: data) {
-            // Check Array
-            let results = [decodedResponse.results]
-            print("LoadData()")
-            print(results)
-        } // try
-        } catch {
-            print("invalid data")
-        } // catch
-    } // loadData
+//    func loadData() async {
+//        guard let url = URL(string: "https://google.de") else {
+//            print("Invalid URL")
+//            return }
+//        do {
+//            // This line requires iOS 15, so changed min iOS to 15, change later for backward compatibility
+//        let (data, _) = try await URLSession.shared.data(from: url)
+//
+//        if let decodedResponse = try? JSONDecoder().decode(Response.self, from: data) {
+//            // Check Array
+//            let results = [decodedResponse.results]
+//            print("LoadData()")
+//            print(results)
+//        } // try
+//        } catch {
+//            print("invalid data")
+//        } // catch
+//    } // loadData
 } // struct
 
 
@@ -738,17 +725,19 @@ struct JSONContentUI: View {
 // TODO: Rename Api to something more useful
 class Api: ObservableObject {
     // To automatically update the view when model changes, initiate a published empty array of users
-    @Published var users: [user] = []
+    // @Published var users: [user] = []
     
-    @Published var gelImageMetaData: [GelImageMetaData] = []
+    //@Published var gelImageMetaData: [GelImageMetaData] = []
     
+    // Array where multiple responses can be loaded into
     @Published var gelAnalysisResponse: [GelAnalysisResponse] = []
     
-    @Published var column: [Column] = []
+   // @Published var column: [Column] = []
     
-    @State var image:UIImage = UIImage()
+   // @State var image:UIImage = UIImage()
     
-    // POST Request with image
+    // Take an UIImage, form a POST request and send it to analysis to obtain positions of bands and appends it to gelAnalysisResponse
+    // Why not return response instead of appending to @Published state object?
     func getGelImageMetaData(fileName: String, image: UIImage) {
         
         
@@ -799,33 +788,33 @@ class Api: ObservableObject {
     }
     
     // TODO: Delete fetchJSON, since it is a sample request for TODOs to test http requests
-    func fetchJSON() {
-        guard let url = URL(string: "https://jsonplaceholder.typicode.com/todos/") else { return }
-        
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            if let data = data, let _ = String(data: data, encoding: .utf8) {
-               // print(string)
-                
-                // https://developer.apple.com/documentation/foundation/jsondecoder
-                // For better debugging uncomment
-                // let json1 = try! JSONDecoder().decode([user].self, from: data)
-                
-                // [user].self: data structure array of users to which JSON data from API call has to cast to
-                do {
-                let json = try JSONDecoder().decode([user].self, from: data)
-                    print(json[0])
-                    // Replace with async await?
-                    DispatchQueue.main.async {
-                        // self? ??
-                        self.users = json
-                    }
-                } catch  {
-                    print("JSON Format does not comply with struct keys.")
-                }
-            }
-        }
-        task.resume()
-    }
+//    func fetchJSON() {
+//        guard let url = URL(string: "https://jsonplaceholder.typicode.com/todos/") else { return }
+//
+//        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+//            if let data = data, let _ = String(data: data, encoding: .utf8) {
+//               // print(string)
+//
+//                // https://developer.apple.com/documentation/foundation/jsondecoder
+//                // For better debugging uncomment
+//                // let json1 = try! JSONDecoder().decode([user].self, from: data)
+//
+//                // [user].self: data structure array of users to which JSON data from API call has to cast to
+//                do {
+//                let json = try JSONDecoder().decode([user].self, from: data)
+//                    print(json[0])
+//                    // Replace with async await?
+//                    DispatchQueue.main.async {
+//                        // self? ??
+//                        self.users = json
+//                    }
+//                } catch  {
+//                    print("JSON Format does not comply with struct keys.")
+//                }
+//            }
+//        }
+//        task.resume()
+//    }
 }
 
 
@@ -866,6 +855,7 @@ class ImageLoaderForPOSTRequest: ObservableObject {
         }
     }
 
+    
     init(url:URL) {
 
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
