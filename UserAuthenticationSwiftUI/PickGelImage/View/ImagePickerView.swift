@@ -54,7 +54,6 @@ struct ImagePickerView: View {
                         .padding(4)
                         .background(Color.black.opacity(0.5))
                         .foregroundColor(.white)
-
                     }
                 }
             .navigationBarItems(leading: Button(action: {
@@ -93,6 +92,7 @@ struct SwiftUIView_Previews: PreviewProvider {
 }
 
 // PhotoPicker is view in popover to select images from library
+// This is used in JSONLoader
 struct PhotoPicker: UIViewControllerRepresentable {
   
     

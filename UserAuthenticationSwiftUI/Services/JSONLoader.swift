@@ -490,6 +490,10 @@ struct JSONContentUI: View {
     @State private var showPopover:[Bool] = [false]
     @State private var showPopover2:Bool = false
     
+    // Pick image from library
+    @State var showImagePicker: Bool = false
+    @ObservedObject var mediaItems = PickedMediaItems()
+    
     // Sample data for initialization
     @State private var selectedBandItem:Band = Band(column: 1, bpSize: 100, intensity: "low", smear: "low", xid: "342qwasdf", confidence:1.0, xMin: 200, yMin: 100, xMax: 240, yMax: 140)
     @State private var pixelToBasepairReference: [PixelToBasePairArray] = [PixelToBasePairArray(yPixel: 0, basePair: 0)]
@@ -499,13 +503,13 @@ struct JSONContentUI: View {
 ////     TODO: Figure out how to use url with correct init, then remoce ImageLoaderForPOSTRequest, it is redundant
 //    var imageLoader = ImageLoaderForPOSTRequest(url:URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!)
 ////
-    ///url used to load image in AsyncImage for UI display
+  /// url used to load image in AsyncImage for UI display
         let url = URL(string: "https://www.bioinformatics.nl/molbi/SimpleCloningLab/images/GelMovie_gel2.jpg")!
-        // TODO: Figure out how to use url with correct init, then remoce ImageLoaderForPOSTRequest, it is redundant
+        // TODO: Figure out how to use url with correct init, then remove ImageLoaderForPOSTRequest, it is redundant
         // load the same image to use in POST request
         var imageLoader = ImageLoaderForPOSTRequest(url:URL(string: "https://www.bioinformatics.nl/molbi/SimpleCloningLab/images/GelMovie_gel2.jpg")!)
 
-    //var asyncImage = AsyncImage(url: url, placeholder: { Text("Loading ... 123")
+    // var asyncImage = AsyncImage(url: url, placeholder: { Text("Loading ... 123")
     // })
     
     
@@ -519,12 +523,10 @@ struct JSONContentUI: View {
     
     func getResizeAdjustedVerticalPostition(geo: GeometryProxy, band: Band, imageHeight: Double) -> CGFloat {
         return CGFloat(CGFloat((band.yMin+band.yMax)/2) * (geo.size.height / (imageHeight)))
-
     }
     
     func transformPixelToBasePairs(yPositionInPixels: Int, pixelToBasePairReference: [PixelToBasePairArray]) -> Double {
         
-  
         if pixelToBasePairReference.count > 1 {
             
             let max_y = pixelToBasePairReference.map { $0.yPixel }.max()
@@ -534,8 +536,8 @@ struct JSONContentUI: View {
             
             //TOOD: Get Index of max value
             
-            let max_basePair = pixelToBasePairReference.map { $0.basePair}.max()
-            let min_basePair = pixelToBasePairReference.map { $0.basePair}.min()
+            let max_basePair = pixelToBasePairReference.map { $0.basePair }.max()
+            let min_basePair = pixelToBasePairReference.map { $0.basePair }.min()
             
             let delta_basePair = Double(max_basePair! - min_basePair!)
             
@@ -572,6 +574,8 @@ struct JSONContentUI: View {
 //        .task {
 //            await loadData()
 //        }
+        NavigationView {
+        
         VStack{
             
         
@@ -595,8 +599,8 @@ struct JSONContentUI: View {
                     
                     // Make call to API with the image loaded
                     // TODO: Make this less ugly
-                    api.getGelImageMetaData(fileName: "file", image:self.image)
-                    print("Image was loaded and send in onReceive")
+                    api.getGelImageMetaData(fileName: "file", image: self.image)
+                 //   print("Image was loaded and send in onReceive")
         } // onReceive
         .overlay(
         // Overlay of gel bands
@@ -666,7 +670,14 @@ struct JSONContentUI: View {
        }.foregroundColor(.black)
             .scaledToFit()
 
-    }
+    } // VStack
+        .navigationBarItems(leading: Button(action: {}, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")}))
+ } // NavigationView
+        .sheet(isPresented: $showImagePicker, content: {
+            PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
+                showImagePicker = false
+            }
+        })
         
 //        List {
 //            ForEach(users.gelImageMetaData, id: \.self) { gelImage in
@@ -741,7 +752,7 @@ class Api: ObservableObject {
     func getGelImageMetaData(fileName: String, image: UIImage) {
         
         
-       // let url = URL(string: "http://127.0.0.1:1324/api/v1/electrophoresis/imageanalysis")
+        // let url = URL(string: "http://127.0.0.1:1324/api/v1/electrophoresis/imageanalysis")
         let url = URL(string: "http://167.172.190.93:1324/api/v1/electrophoresis/imageanalysis")
         let boundary = UUID().uuidString
 
