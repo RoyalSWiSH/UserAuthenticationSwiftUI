@@ -20,7 +20,7 @@ struct LoginView: View {
         VStack(spacing: 16) {
             VStack(spacing: 16) {
                 InputTextFieldView(text: $vm.credentials.email, placeholder: "Email", keyboardType: .emailAddress, sfSymbol: "envelope")
-                InputPasswordView(password: $vm.credentials.passoword, placeholder: "Password", sfSymbol: "lock")
+                InputPasswordView(password: $vm.credentials.password, placeholder: "Password", sfSymbol: "lock")
             } // VStack
             
             // MARK: Forgot Password

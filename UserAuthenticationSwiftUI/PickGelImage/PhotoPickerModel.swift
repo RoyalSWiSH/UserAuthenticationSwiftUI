@@ -8,7 +8,7 @@
 import SwiftUI
 import Photos
 
-struct PhotoPickerModel {
+struct PhotoPickerModel: Identifiable {
     enum MediaType {
         case photo, video, livePhoto
     }

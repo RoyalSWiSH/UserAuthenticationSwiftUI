@@ -19,7 +19,7 @@ final class LoginServiceImpl: LoginService {
             Future { promise in
                 
                 Auth.auth()
-                    .signIn(withEmail: credentials.email, password: credentials.passoword) { res, error in
+                    .signIn(withEmail: credentials.email, password: credentials.password) { res, error in
                         if let err = error {
                             promise(.failure(err))
                         } else {
