@@ -28,20 +28,22 @@ struct UserAuthenticationSwiftUIApp: App {
     @StateObject var sessionService = SessionServiceImpl()
   //  @StateObject var response: Response
     
+    // Whats the difference between Scene and View? Why do I need WindowGroup?
     var body: some Scene {
         WindowGroup {
-            NavigationView {
-                switch sessionService.state {
-                case .loggedIn:
-                    HomeView()
-                        // Inject service into HomeView from parent to child view
-                        .environmentObject(sessionService)
-                case .loggedOut:
-                    //LoginView()
-//                    ImagePickerView()
-                    SendGelImageView(image: imageData, response: response)
-                }
-            } // NavigationView
+//            NavigationView {
+//                switch sessionService.state {
+//                case .loggedIn:
+//                    HomeView()
+//                        // Inject service into HomeView from parent to child view
+//                        .environmentObject(sessionService)
+//                case .loggedOut:
+//                    //LoginView()
+////                    ImagePickerView()
+////                    SendGelImageView(image: imageData, response: response)
+//                }
+//            } // NavigationView
+            SendGelImageView(image: imageData, response: response)
         } // WindowGroup
     }
 }

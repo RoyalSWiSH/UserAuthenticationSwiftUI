@@ -575,12 +575,18 @@ struct JSONContentUI: View {
 //        .task {
 //            await loadData()
 //        }
+        // TODO: Replace with NavigationSplitView, but thats iOS 16 only
+        if UIDevice.current.userInterfaceIdiom == .phone {
         NavigationView {
         
         VStack{
             
-        
-        Button("Show Menu") {showPopover2 = true}
+        // TODO: Figure out how to get individual popover at the position of the band on iPad
+        Button("Analyze") { print("Analyse selected image 4")
+            for item in mediaItems.items {
+                api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage())
+                print("Analyse selected image")
+                print(api.gelAnalysisResponse)}}
         .popover(isPresented: $showPopover2) {
             Text("Convert refe rence band at position " + String(linearMappingFromPixelToBasePair(yPositionInPixels: selectedBandItem.yMin, slope: 1.0, yCross: 0.0)) + "px to base pairs").font(.headline).padding()
             // Better way to unwrap .last instead of !?
@@ -590,87 +596,7 @@ struct JSONContentUI: View {
             Text("Ladder Bp: " + (pixelToBasepairReference.map{element in String(element.basePair)}.joined(separator: ",")))
         }
             
-            List(mediaItems.items, id: \.id) {item in
-                ZStack(alignment: .topLeading) {
-                    if item.mediaType == .photo {
-                        
-                        let image = item.photo ?? UIImage()
-                        
-                        Image(uiImage: item.photo ?? UIImage())
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        // this overlay section is a dublication as in AsyncImage below, TODO: move out to and consolidate in separate function.
-                        .overlay(
-                            // Overlay of gel bands
-                                GeometryReader { geo in
-                                            
-                                // This loop probably just has one item? Yes, but it could load multiple requests, for now gelAnalysisResponse is an array.
-                                // Loop through all API responses and then draw a box with the size of each band
-                                ForEach(api.gelAnalysisResponse, id: \.self) { gelImage in
 
-                                    ForEach(gelImage.bands, id: \.self) { band in
-                    // MARK: Visual highlighting of gel bands and band size text formatting
-                    //                Rectangle()
-                    //                        .stroke(lineWidth: 2)
-                    //                        .frame(width: 20, height: 10)
-                    //                        .border(.red)
-                    //                        .foregroundColor(.blue)
-                    //                        .position(x: CGFloat(box.xMin)/8.4, y: CGFloat(box.yMin)/4.1)
-                                        
-                                       
-                                        // Convert position from pixel into base pairs and round them. Error in a gel 10 bp?
-                                        
-                                        
-                                        let yPosition = band.yMin
-                                        
-                                        let basePairSize:Double = transformPixelToBasePairs(yPositionInPixels: yPosition, pixelToBasePairReference: pixelToBasepairReference)
-                                        
-                                        
-                                        let roundedBasePairSize: Int = Int( round(basePairSize*10)/10 )
-                                        Text(String(roundedBasePairSize))
-                                            .border(.green)
-                                            .foregroundColor(.black)
-                                            .font(.system(size: 12, weight: .light, design: .serif))
-                                           // .margin(top: 32, bottom: 8, left: 16, right: 16)
-                                            .background(Color.gray.opacity(0.6))
-                                            .onAppear() {
-                                                // initialize popover state
-                                                self.showPopover.append(false)
-                                            }
-                                            .onTapGesture(count: 2) {
-                                                print("Double tapped!")
-                                                self.showPopover[0] = true
-                                                showPopover2 = true
-                                                
-                                                selectedBandItem = band
-                                                let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
-                                                pixelToBasepairReference.append(a)
-                                            }
-                                            .onLongPressGesture {
-                                                    print("Long pressed!")
-                                            }
-                    //                        .popover(isPresented:  $showPopover2) {
-                    ////                        .popover(isPresented: self.$showPopover[0]) {
-                    //                                    Text("Your content here")
-                    //                                        .font(.headline)
-                    //                                        .padding()
-                    //                                }
-                    //                        .popover(isPresented: self.$showPopover[0])
-                                        // The divide by 8.4 part are hard coded scale factors to match coordinates from object detection to UI. TODO: Make fit overlay and coordiante transformations universal - 29. Okt 2022 DONE
-                                            .position(x: getResizeAdjustedHorizontalPostition(geo: geo, band: band, imageWidth: image.size.width), y: getResizeAdjustedVerticalPostition(geo: geo, band: band, imageHeight: image.size.height))
-                                       
-//                                        print("Image width" + self.image.size.width)
-                                            
-                                        } // ForEach
-                                      }  // ForEach
-                                        }
-                                    ).scaledToFit()
-                        
-                    }
-            }.scaledToFit()
-        }
-            
-            
             
 //       ZStack{
 //                
@@ -756,10 +682,99 @@ struct JSONContentUI: View {
 
     } // VStack
         .navigationBarItems(leading: Button(action: {}, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")}))
+        .navigationTitle("Gelly")
+            
+//            Button(action: {}, label: {Image(systemName: "trash").foregroundColor(.red)})
+//            Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")})
+                
+//            VStack {
+//                Text("Welcome to SnowSeeker!")
+//            List(mediaItems.items, id: \.id) {item in
+//                ZStack(alignment: .topLeading) {
+//                    if item.mediaType == .photo {
+//
+//                        let image = item.photo ?? UIImage()
+//
+//                        Image(uiImage: item.photo ?? UIImage())
+//                        .resizable()
+//                        .aspectRatio(contentMode: .fit)
+//                        // this overlay section is a dublication as in AsyncImage below, TODO: move out to and consolidate in separate function.
+//                        .overlay(
+//                             // Overlay of gel bands
+//                                GeometryReader { geo in
+//
+//                                // This loop probably just has one item? Yes, but it could load multiple requests, for now gelAnalysisResponse is an array.
+//                                // Loop through all API responses and then draw a box with the size of each band
+//                                ForEach(api.gelAnalysisResponse, id: \.self) { gelImage in
+//
+//                                    ForEach(gelImage.bands, id: \.self) { band in
+//                    // MARK: Visual highlighting of gel bands and band size text formatting
+//                    //                Rectangle()
+//                    //                        .stroke(lineWidth: 2)
+//                    //                        .frame(width: 20, height: 10)
+//                    //                        .border(.red)
+//                    //                        .foregroundColor(.blue)
+//                    //                        .position(x: CGFloat(box.xMin)/8.4, y: CGFloat(box.yMin)/4.1)
+//
+//
+//                                        // Convert position from pixel into base pairs and round them. Error in a gel 10 bp?
+//
+//
+//                                        let yPosition = band.yMin
+//
+//                                        let basePairSize:Double = transformPixelToBasePairs(yPositionInPixels: yPosition, pixelToBasePairReference: pixelToBasepairReference)
+//
+//
+//                                        let roundedBasePairSize: Int = Int( round(basePairSize*10)/10 )
+//                                        Text(String(roundedBasePairSize))
+//                                            .border(.green)
+//                                            .foregroundColor(.black)
+//                                            .font(.system(size: 12, weight: .light, design: .serif))
+//                                           // .margin(top: 32, bottom: 8, left: 16, right: 16)
+//                                            .background(Color.gray.opacity(0.6))
+//                                            .onAppear() {
+//                                                // initialize popover state
+//                                                self.showPopover.append(false)
+//                                            }
+//                                            .onTapGesture(count: 2) {
+//                                                print("Double tapped!")
+//                                                self.showPopover[0] = true
+//                                                showPopover2 = true
+//
+//                                                selectedBandItem = band
+//                                                let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
+//                                                pixelToBasepairReference.append(a)
+//                                            }
+//                                            .onLongPressGesture {
+//                                                    print("Long pressed!")
+//                                            }
+//                    //                        .popover(isPresented:  $showPopover2) {
+//                    ////                        .popover(isPresented: self.$showPopover[0]) {
+//                    //                                    Text("Your content here")
+//                    //                                        .font(.headline)
+//                    //                                        .padding()
+//                    //                                }
+//                    //                        .popover(isPresented: self.$showPopover[0])
+//                                        // The divide by 8.4 part are hard coded scale factors to match coordinates from object detection to UI. TODO: Make fit overlay and coordiante transformations universal - 29. Okt 2022 DONE
+//                                            .position(x: getResizeAdjustedHorizontalPostition(geo: geo, band: band, imageWidth: image.size.width), y: getResizeAdjustedVerticalPostition(geo: geo, band: band, imageHeight: image.size.height))
+//
+//
+//                                        } // ForEach
+//                                      }  // ForEach
+//                                        }
+//                                    ).scaledToFit()
+//
+//                    }
+//            }.scaledToFit()
+//            }
+//        }
+           RegisterView()
  } // NavigationView
+        .navigationViewStyle(StackNavigationViewStyle())
         .sheet(isPresented: $showImagePicker, content: {
             PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
                 showImagePicker = false
+                
                 print("Analyse selected image 1")
                 for item in mediaItems.items {
                     api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage())
@@ -768,7 +783,127 @@ struct JSONContentUI: View {
             }
             }
         }) // .sheet
-        
+       
+        }
+        else {
+            NavigationView{
+                List {
+                    NavigationLink {
+                        VStack {
+                            
+                           
+                            //                Text("Welcome to SnowSeeker!")
+                                        List(mediaItems.items, id: \.id) {item in
+                                            ZStack(alignment: .topLeading) {
+                                                if item.mediaType == .photo {
+                            
+                                                    let image = item.photo ?? UIImage()
+                            
+                                                    Image(uiImage: item.photo ?? UIImage())
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fit)
+                                                    // this overlay section is a dublication as in AsyncImage below, TODO: move out to and consolidate in separate function.
+                                                    .overlay(
+                                                         // Overlay of gel bands
+                                                            GeometryReader { geo in
+                            
+                                                            // This loop probably just has one item? Yes, but it could load multiple requests, for now gelAnalysisResponse is an array.
+                                                            // Loop through all API responses and then draw a box with the size of each band
+                                                            ForEach(api.gelAnalysisResponse, id: \.self) { gelImage in
+                            
+                                                                ForEach(gelImage.bands, id: \.self) { band in
+                                                // MARK: Visual highlighting of gel bands and band size text formatting
+                                                //                Rectangle()
+                                                //                        .stroke(lineWidth: 2)
+                                                //                        .frame(width: 20, height: 10)
+                                                //                        .border(.red)
+                                                //                        .foregroundColor(.blue)
+                                                //                        .position(x: CGFloat(box.xMin)/8.4, y: CGFloat(box.yMin)/4.1)
+                            
+                            
+                                                                    // Convert position from pixel into base pairs and round them. Error in a gel 10 bp?
+                            
+                            
+                                                                    let yPosition = band.yMin
+                            
+                                                                    let basePairSize:Double = transformPixelToBasePairs(yPositionInPixels: yPosition, pixelToBasePairReference: pixelToBasepairReference)
+                            
+                            
+                                                                    let roundedBasePairSize: Int = Int( round(basePairSize*10)/10 )
+                                                                    Text(String(roundedBasePairSize))
+                                                                        .border(.green)
+                                                                        .foregroundColor(.black)
+                                                                        .font(.system(size: 12, weight: .light, design: .serif))
+                                                                       // .margin(top: 32, bottom: 8, left: 16, right: 16)
+                                                                        .background(Color.gray.opacity(0.6))
+                                                                        .onAppear() {
+                                                                            // initialize popover state
+                                                                            self.showPopover.append(false)
+                                                                        }
+                                                                        .onTapGesture(count: 2) {
+                                                                            print("Double tapped!")
+                                                                            self.showPopover[0] = true
+                                                                            showPopover2 = true
+                            
+                                                                            selectedBandItem = band
+                                                                            let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
+                                                                            pixelToBasepairReference.append(a)
+                                                                        }
+                                                                        .onLongPressGesture {
+                                                                                print("Long pressed!")
+                                                                        }
+                                                //                        .popover(isPresented:  $showPopover2) {
+                                                ////                        .popover(isPresented: self.$showPopover[0]) {
+                                                //                                    Text("Your content here")
+                                                //                                        .font(.headline)
+                                                //                                        .padding()
+                                                //                                }
+                                                //                        .popover(isPresented: self.$showPopover[0])
+                                                                    // The divide by 8.4 part are hard coded scale factors to match coordinates from object detection to UI. TODO: Make fit overlay and coordiante transformations universal - 29. Okt 2022 DONE
+                                                                        .position(x: getResizeAdjustedHorizontalPostition(geo: geo, band: band, imageWidth: image.size.width), y: getResizeAdjustedVerticalPostition(geo: geo, band: band, imageHeight: image.size.height))
+                            
+                            
+                                                                    } // ForEach
+                                                                  }  // ForEach
+                                                                    }
+                                                                ).scaledToFit()
+                            
+                                                }
+                                        }.scaledToFit()
+                                        }
+                
+                            
+                        }
+                            .navigationBarTitle(Text("Foo"))
+                            .navigationBarItems(leading: Button(action: {}, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")})        .sheet(isPresented: $showImagePicker, content: {
+                                PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
+                                    showImagePicker = false
+                                    
+                                    print("Analyse selected image 1")
+                                    for item in mediaItems.items {
+                                        api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage())
+                                        print("Analyse selected image")
+                                        print(api.gelAnalysisResponse)
+                                }
+                                }
+                            }) // .sheet)
+                    )
+                    }
+                    label: {
+                            Label("LabBook", systemImage: "info.circle")
+                    } // NavigationLink
+                NavigationLink { Text("Settings")}
+                    label: {
+
+                            Label("Settings", systemImage: "gear")
+
+                    } // NavigationLink
+                }
+            } // NavigationView
+
+            
+            .navigationTitle("Gelly")
+        }
         
 //        List {
 //            ForEach(users.gelImageMetaData, id: \.self) { gelImage in
