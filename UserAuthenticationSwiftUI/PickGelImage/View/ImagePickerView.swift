@@ -18,16 +18,18 @@ struct ImagePickerView: View {
     // Is image picker currently displayed?
     @State var showImagePicker: Bool = false
     
-    @State var selectedImage: Image? = Image("")
+//    @State var selectedImage: Image? = Image("")
     
     // List of selected media Items (.photo, .video or .livePhoto) to display
     @ObservedObject var mediaItems = PickedMediaItems()
     
-    var configuration = PHPickerConfiguration(photoLibrary: PHPhotoLibrary.shared())
+//    var configuration = PHPickerConfiguration(photoLibrary: PHPhotoLibrary.shared())
     
     var body: some View {
         NavigationView {
             // Display selected Images from mediaItems in a List. Item is an element in mediaItems
+            List {
+            NavigationLink {
             List(mediaItems.items, id: \.id) { item in
                 ZStack(alignment: .topLeading) {
                     if item.mediaType == .photo {
@@ -67,6 +69,18 @@ struct ImagePickerView: View {
             }, label: {
                 Image(systemName: "plus")
             }))
+            
+            }  label: {
+                Label("LabBook", systemImage: "info.circle")
+          }
+            NavigationLink { Text("Settings")}
+        label: {
+            
+            Label("Settings", systemImage: "gear")
+            
+        }
+            }
+            
             }
         // Present a popover with a PhotoPicker (as defined in struct below) (why send mediaItems as argument?, what does didSelectItem? Handler after selection is finished?
     .sheet(isPresented: $showImagePicker, content: {

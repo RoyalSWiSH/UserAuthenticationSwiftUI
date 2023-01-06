@@ -7,11 +7,13 @@
 
 import Foundation
 import Combine
+import FirebaseCore
 import FirebaseDatabase
 import FirebaseAuth
 import FirebaseFirestoreSwift
+import FirebaseFirestore
 
-import Supabase
+//import Supabase
 
 
 enum RegistrationKeys: String {
@@ -46,9 +48,7 @@ final class RegistrationServiceImpl: RegistrationService {
                             promise(.failure(err))
                         } else {
                             
-                            
-                           
-                            
+        
                             // Associate Firebase Realtime DB with User
                             if let uid = res?.user.uid {
                                 let values = [RegistrationKeys.firstName.rawValue: details.firstName,
@@ -56,7 +56,7 @@ final class RegistrationServiceImpl: RegistrationService {
                                 RegistrationKeys.occupation.rawValue: details.occupation] as [String: Any]
                                 
                                 // Add to Firebase Realtime DB
-                                // TODO: Show alert messagre if error occured
+                                // TODO: Show alert message if error occured
                                 // Does not add details to database right now 06.01.2022
                                 Database.database()
                                     .reference()

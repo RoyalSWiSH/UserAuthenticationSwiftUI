@@ -6,7 +6,8 @@
 //
 
 import SwiftUI
- import Firebase
+import Firebase
+import FirebaseCore
 
 //:MARK Add App Delegate to initialize Firebase or Supabase
 // Do I need @UIApplicationMain?
@@ -39,11 +40,12 @@ struct UserAuthenticationSwiftUIApp: App {
 //                        .environmentObject(sessionService)
 //                case .loggedOut:
 //                    //LoginView()
-////                    ImagePickerView()
+//                    ImagePickerView()
+            SendGelImageView(image: imageData, response: response)
 ////                    SendGelImageView(image: imageData, response: response)
 //                }
 //            } // NavigationView
-            SendGelImageView(image: imageData, response: response)
+           
         } // WindowGroup
     }
 }
