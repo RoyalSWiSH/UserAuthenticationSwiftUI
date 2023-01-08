@@ -18,7 +18,7 @@ struct SendGelImageView: View {
     
     var body: some View {
         
-        NavigationView {
+//        NavigationView {
 //            list.navigationBarItems(trailing: addButton)
 //                .onAppear {
 //                    print("Navigation View Api().callAPI()")
@@ -34,7 +34,7 @@ struct SendGelImageView: View {
 //                JSONContentUI()
 //                // Fallback on earlier versions
 //            }
-        }
+//        }
     }
         
     

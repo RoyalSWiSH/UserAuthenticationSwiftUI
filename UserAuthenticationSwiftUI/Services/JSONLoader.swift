@@ -195,6 +195,80 @@ struct Band: Codable, Hashable {
     }
 }
 
+struct BandView: View {
+    let band: Band
+    
+    @State private var isShowingPopover: Bool = false
+    // TODO: Remove default value
+    @State var roundedBasePairSize: Int = 0
+    
+    func transformPixelToBasePairs(yPositionInPixels: Int, pixelToBasePairReference: [PixelToBasePairArray]) -> Double {
+        
+        if pixelToBasePairReference.count > 1 {
+            
+            let max_y = pixelToBasePairReference.map { $0.yPixel }.max()
+            let min_y = pixelToBasePairReference.map { $0.yPixel }.min()
+            
+            let delta_y = Double(max_y! - min_y!)
+            
+            // TOOD: Get Index of max value
+            
+            let max_basePair = pixelToBasePairReference.map { $0.basePair }.max()
+            let min_basePair = pixelToBasePairReference.map { $0.basePair }.min()
+            
+            let delta_basePair = Double(max_basePair! - min_basePair!)
+            
+            let slope = delta_basePair/delta_y
+            
+            return linearMappingFromPixelToBasePair(yPositionInPixels:
+                                                        yPositionInPixels, slope: slope, yCross: 0)
+        }
+        else {
+            return Double(yPositionInPixels)
+        }
+    }
+    
+    func linearMappingFromPixelToBasePair(yPositionInPixels: Int, slope: Double, yCross: Double) -> Double {
+        // Linear mapping of pixels to base pairs. This is a very simplistic way to calculate this. Better linear regression, which requires CreateML and an M1 Chip.
+        // yPositionInPixels: Position of the band on the image in pixels
+        // slope: Gradient to transform pixels into basepairs
+        // yCross: Crossing of slope with y-axis
+        return Double(Double(yPositionInPixels)*slope+yCross)
+    }
+    var body: some View {
+        
+        
+        //                                                            let yPosition = band.yMin
+        //
+        //                                                            let basePairSize:Double = transformPixelToBasePairs(yPositionInPixels: yPosition, pixelToBasePairReference: pixelToBasepairReference)
+        //
+                                                                    
+        //                                                            let roundedBasePairSize: Int = Int( round(basePairSize*10)/10 )
+        
+        VStack {
+            Text(String(band.yMin))
+            .onTapGesture(count: 2) {
+//                print("Double tapped!")
+                self.isShowingPopover = true
+                
+                
+//                selectedBandItem = band
+//                let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
+//                pixelToBasepairReference.append(a)
+            }
+            .popover(isPresented: $isShowingPopover) {
+//                print("hallo")
+                Text("Band " + String(band.yMin))
+                Text("Convert reference band at position " + String(linearMappingFromPixelToBasePair(yPositionInPixels: band.yMin, slope: 1.0, yCross: 0.0)) + "px to base pairs").font(.headline).padding()
+//                // Better way to unwrap .last instead of !?
+//                TextField("What size does this band have?",  value: $pixelToBasepairReference.last!.basePair, format: .number)
+//                // Show array of base pair sizes for the reference ladder
+//                Text("Ladder Px: " + (pixelToBasepairReference.map{element in String(element.yPixel)}.joined(separator: ",")))
+//                Text("Ladder Bp: " + (pixelToBasepairReference.map{element in String(element.basePair)}.joined(separator: ",")))
+            }
+        }
+    }
+}
 
 extension GelAnalysisResponse {
     
@@ -528,42 +602,42 @@ struct JSONContentUI: View {
         return CGFloat(CGFloat((band.yMin+band.yMax)/2) * (geo.size.height / (imageHeight)))
     }
     
-    func transformPixelToBasePairs(yPositionInPixels: Int, pixelToBasePairReference: [PixelToBasePairArray]) -> Double {
-        
-        if pixelToBasePairReference.count > 1 {
-            
-            let max_y = pixelToBasePairReference.map { $0.yPixel }.max()
-            let min_y = pixelToBasePairReference.map { $0.yPixel }.min()
-            
-            let delta_y = Double(max_y! - min_y!)
-            
-            // TOOD: Get Index of max value
-            
-            let max_basePair = pixelToBasePairReference.map { $0.basePair }.max()
-            let min_basePair = pixelToBasePairReference.map { $0.basePair }.min()
-            
-            let delta_basePair = Double(max_basePair! - min_basePair!)
-            
-            let slope = delta_basePair/delta_y
-            
-            return linearMappingFromPixelToBasePair(yPositionInPixels:
-                                                        yPositionInPixels, slope: slope, yCross: 0)
-        }
-        else {
-            return Double(yPositionInPixels)
-        }
-    }
+//    func transformPixelToBasePairs(yPositionInPixels: Int, pixelToBasePairReference: [PixelToBasePairArray]) -> Double {
+//
+//        if pixelToBasePairReference.count > 1 {
+//
+//            let max_y = pixelToBasePairReference.map { $0.yPixel }.max()
+//            let min_y = pixelToBasePairReference.map { $0.yPixel }.min()
+//
+//            let delta_y = Double(max_y! - min_y!)
+//
+//            // TOOD: Get Index of max value
+//
+//            let max_basePair = pixelToBasePairReference.map { $0.basePair }.max()
+//            let min_basePair = pixelToBasePairReference.map { $0.basePair }.min()
+//
+//            let delta_basePair = Double(max_basePair! - min_basePair!)
+//
+//            let slope = delta_basePair/delta_y
+//
+//            return linearMappingFromPixelToBasePair(yPositionInPixels:
+//                                                        yPositionInPixels, slope: slope, yCross: 0)
+//        }
+//        else {
+//            return Double(yPositionInPixels)
+//        }
+//    }
+//
+//    func linearMappingFromPixelToBasePair(yPositionInPixels: Int, slope: Double, yCross: Double) -> Double {
+//        // Linear mapping of pixels to base pairs. This is a very simplistic way to calculate this. Better linear regression, which requires CreateML and an M1 Chip.
+//        // yPositionInPixels: Position of the band on the image in pixels
+//        // slope: Gradient to transform pixels into basepairs
+//        // yCross: Crossing of slope with y-axis
+//        return Double(Double(yPositionInPixels)*slope+yCross)
+//    }
     
-    func linearMappingFromPixelToBasePair(yPositionInPixels: Int, slope: Double, yCross: Double) -> Double {
-        // Linear mapping of pixels to base pairs. This is a very simplistic way to calculate this. Better linear regression, which requires CreateML and an M1 Chip.
-        // yPositionInPixels: Position of the band on the image in pixels
-        // slope: Gradient to transform pixels into basepairs
-        // yCross: Crossing of slope with y-axis
-        return Double(Double(yPositionInPixels)*slope+yCross)
-    }
     
-    
-    @available(iOS 15.0, *)
+//    @available(iOS 15.0, *)
     
     
     var body: some View {
@@ -580,26 +654,26 @@ struct JSONContentUI: View {
         // TODO: Replace with NavigationSplitView, but thats iOS 16 only
         if UIDevice.current.userInterfaceIdiom == .phone {
             NavigationView {
-                
+
                 VStack{
-                    
+
                     // TODO: Figure out how to get individual popover at the position of the band on iPad
                     Button("Analyze") { print("Analyse selected image 4")
                         for item in mediaItems.items {
                             api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage())
                             print("Analyse selected image")
                             print(api.gelAnalysisResponse)}}
-                    .popover(isPresented: $showPopover2) {
-                        Text("Convert refe rence band at position " + String(linearMappingFromPixelToBasePair(yPositionInPixels: selectedBandItem.yMin, slope: 1.0, yCross: 0.0)) + "px to base pairs").font(.headline).padding()
-                        // Better way to unwrap .last instead of !?
-                        TextField("What size does this band have?",  value: $pixelToBasepairReference.last!.basePair, format: .number)
-                        // Show array of base pair sizes for the reference ladder
-                        Text("Ladder Px: " + (pixelToBasepairReference.map{element in String(element.yPixel)}.joined(separator: ",")))
-                        Text("Ladder Bp: " + (pixelToBasepairReference.map{element in String(element.basePair)}.joined(separator: ",")))
-                    }
-                    
-                    
-                    
+//                    .popover(isPresented: $showPopover2) {
+//                        Text("Convert refe rence band at position " + String(linearMappingFromPixelToBasePair(yPositionInPixels: selectedBandItem.yMin, slope: 1.0, yCross: 0.0)) + "px to base pairs").font(.headline).padding()
+//                        // Better way to unwrap .last instead of !?
+//                        TextField("What size does this band have?",  value: $pixelToBasepairReference.last!.basePair, format: .number)
+//                        // Show array of base pair sizes for the reference ladder
+//                        Text("Ladder Px: " + (pixelToBasepairReference.map{element in String(element.yPixel)}.joined(separator: ",")))
+//                        Text("Ladder Bp: " + (pixelToBasepairReference.map{element in String(element.basePair)}.joined(separator: ",")))
+//                    }
+
+
+
                     //       ZStack{
                     //
                     //        AsyncImage(url: self.url, placeholder: {
@@ -681,14 +755,14 @@ struct JSONContentUI: View {
                     //
                     //       }.foregroundColor(.black)
                     //            .scaledToFit()
-                    
+
                 } // VStack
                 .navigationBarItems(leading: Button(action: {}, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")}))
                 .navigationTitle("Gelly")
-                
+
                 //            Button(action: {}, label: {Image(systemName: "trash").foregroundColor(.red)})
                 //            Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")})
-                
+
                 //            VStack {
                 //                Text("Welcome to SnowSeeker!")
                 //            List(mediaItems.items, id: \.id) {item in
@@ -776,23 +850,21 @@ struct JSONContentUI: View {
             .sheet(isPresented: $showImagePicker, content: {
                 PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
                     showImagePicker = false
-                    
+
                     print("Analyse selected image 1")
                     for item in mediaItems.items {
                         api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage())
-                        print("Analyse selected image")
-                        print(api.gelAnalysisResponse)
+//                        print("Analyse selected image")
+//                        print(api.gelAnalysisResponse)
                     }
                 }
             }) // .sheet
-            
-        }
+        } // iPad vs iPhone View
         else {
             NavigationView{
                 List {
                     NavigationLink {
                         VStack {
-                            
                             
                             //                Text("Welcome to SnowSeeker!")
                             List(mediaItems.items, id: \.id) {item in
@@ -824,138 +896,88 @@ struct JSONContentUI: View {
                                                             
                                                             
                                                             // Convert position from pixel into base pairs and round them. Error in a gel 10 bp?
+//
+//
+//                                                            let yPosition = band.yMin
+//
+//                                                            let basePairSize:Double = transformPixelToBasePairs(yPositionInPixels: yPosition, pixelToBasePairReference: pixelToBasepairReference)
+//
                                                             
-                                                            
-                                                            let yPosition = band.yMin
-                                                            
-                                                            let basePairSize:Double = transformPixelToBasePairs(yPositionInPixels: yPosition, pixelToBasePairReference: pixelToBasepairReference)
-                                                            
-                                                            
-                                                            let roundedBasePairSize: Int = Int( round(basePairSize*10)/10 )
-                                                            Text(String(roundedBasePairSize))
-                                                                .border(.green)
-                                                                .foregroundColor(.black)
-                                                                .font(.system(size: 12, weight: .light, design: .serif))
-                                                            // .margin(top: 32, bottom: 8, left: 16, right: 16)
-                                                                .background(Color.gray.opacity(0.6))
-                                                                .onAppear() {
-                                                                    // initialize popover state
-                                                                    self.showPopover.append(false)
-                                                                }
-                                                                .onTapGesture(count: 2) {
-                                                                    print("Double tapped!")
-                                                                    self.showPopover[0] = true
-                                                                    showPopover2 = true
-                                                                    
-                                                                    selectedBandItem = band
-                                                                    let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
-                                                                    pixelToBasepairReference.append(a)
-                                                                }
-                                                                .onLongPressGesture {
-                                                                    print("Long pressed!")
-                                                                }
-                                                            //                        .popover(isPresented:  $showPopover2) {
-                                                            ////                        .popover(isPresented: self.$showPopover[0]) {
-                                                            //                                    Text("Your content here")
-                                                            //                                        .font(.headline)
-                                                            //                                        .padding()
-                                                            //                                }
-                                                            //                        .popover(isPresented: self.$showPopover[0])
+//                                                            let roundedBasePairSize: Int = Int( round(basePairSize*10)/10 )
+//                                                            Text(String(roundedBasePairSize))
+                                                            BandView(band: band)
+//                                                                .border(.green)
+//                                                                .foregroundColor(.black)
+//                                                                .font(.system(size: 12, weight: .light, design: .serif))
+//                                                            // .margin(top: 32, bottom: 8, left: 16, right: 16)
+//                                                                .background(Color.gray.opacity(0.6))
+//                                                                .onAppear() {
+//                                                                    // initialize popover state
+//                                                                    self.showPopover.append(false)
+//                                                                }
+//                                                                .onTapGesture(count: 2) {
+//                                                                    print("Double tapped!")
+//                                                                    self.showPopover[0] = true
+//                                                                    showPopover2 = true
+//
+//                                                                    selectedBandItem = band
+//                                                                    let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
+//                                                                    pixelToBasepairReference.append(a)
+//                                                                }
+//                                                                .onLongPressGesture {
+//                                                                    print("Long pressed!")
+//                                                                }
+//                                                                .popover(isPresented: self.$showPopover[0])
                                                             // The divide by 8.4 part are hard coded scale factors to match coordinates from object detection to UI. TODO: Make fit overlay and coordiante transformations universal - 29. Okt 2022 DONE
+                                                            
                                                                 .position(x: getResizeAdjustedHorizontalPostition(geo: geo, band: band, imageWidth: image.size.width), y: getResizeAdjustedVerticalPostition(geo: geo, band: band, imageHeight: image.size.height))
                                                             
                                                             
                                                         } // ForEach
                                                     }  // ForEach
-                                                }
-                                            )
+                                                } // GeometryReader
+                                            ) // overlay
                                         
-                                    }
-                                }
-                            }                            .navigationBarItems(leading: Button(action: {}, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")})        .sheet(isPresented: $showImagePicker, content: {
+                                    } // item.mediaType == .photo
+                                } // ZStack
+                            } // List
+                            .navigationBarItems(leading: Button(action: {}, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")})        .sheet(isPresented: $showImagePicker, content: {
                                 PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
                                     showImagePicker = false
                                     
-                                    print("Analyse selected image 1")
-                                    // Put this at some more appropriate space
-//                                    for item in mediaItems.items {
-//                                        api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage())
-//                                        print("Analyse selected image")
-//                                        print(api.gelAnalysisResponse)
-//                                    }
                                 }
                             })) // .sheet)
                             
                             
                         } // VStack
                         .navigationBarTitle(Text("Foo"))
-                        //                            .navigationBarItems(leading: Button(action: {}, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")})        .sheet(isPresented: $showImagePicker, content: {
-                        //                                PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
-                        //                                    showImagePicker = false
-                        //
-                        //                                    print("Analyse selected image 1")
-                        //                                    for item in mediaItems.items {
-                        //                                        api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage())
-                        //                                        print("Analyse selected image")
-                        //                                        print(api.gelAnalysisResponse)
-                        //                                }
-                        //                                }
-                        //                            }) // .sheet)
-                        //                    )
-                        //                            .onReceive(mediaItems.$items) { _ in
-                        //                                self.imageAdded = true
-                        //                            }
-                        //                            .onAppear {
-                        //                                self.imageAdded = false
-                        //                            }
+       
                     } // NavigationLink
                 label: {
                     Label("LabBook", systemImage: "info.circle")
                 } // NavigationLink
+                    
                     NavigationLink { Text("Settings")}
                 label: {
-                    
+
                     Label("Settings", systemImage: "gear")
-                    
+
                 } // NavigationLink
-//                                    }
+                                    }
                 .onReceive(mediaItems.$items) { mitems in
-//                                        self.imageAdded = true
+//               self.imageAdded = true
                     print("Image changed")
                     for item in mitems {
                         api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage())
                         print("Analyse selected image")
                         print(api.gelAnalysisResponse)
                     }
-                                    }
-//                                    .onAppear {
-////                                        self.imageAdded = false
-//                                    }
+                   } // .onReceive
+                 } // List
                 } // NavigationView
-//                .onReceive(mediaItems.$items) { _ in
-//                    self.imageAdded = true
-//                }
-//                .onAppear {
-//                    self.imageAdded = false
-//                }
-                
-                
-                .navigationTitle("Gelly")
-            }
-            
-            //        List {
-            //            ForEach(users.gelImageMetaData, id: \.self) { gelImage in
-            //                HStack {
-            //                    Text(gelImage.gelImageMetaDataDescription.title)
-            //                }
-            ////            ForEach(users.users, id: \.self) { user in
-            ////                HStack {
-            ////                    Text(user.title)
-            ////                }
-            //            }
-            //        } // List
-            //     } // zstack
-            //.border(.black)
+//                .navigationTitle("Gelly")
+            } // else
+
         } // View
         
         
@@ -993,7 +1015,7 @@ struct JSONContentUI: View {
         //            print("invalid data")
         //        } // catch
         //    } // loadData
-    } // struct
+//    } // struct
     
     
     // Why Observable Object? Call this ViewModel?
@@ -1060,7 +1082,7 @@ struct JSONContentUI: View {
                     }
                 }
             }.resume()
-        }
+        } // func getGelImageMetaData(...)
         
         // TODO: Delete fetchJSON, since it is a sample request for TODOs to test http requests
         //    func fetchJSON() {
@@ -1090,8 +1112,8 @@ struct JSONContentUI: View {
         //        }
         //        task.resume()
         //    }
-    }
 }
+
 
 struct JSONContentUI_Previews: PreviewProvider {
     static var previews: some View {
