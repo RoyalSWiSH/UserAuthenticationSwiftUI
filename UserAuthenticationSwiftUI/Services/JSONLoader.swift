@@ -196,12 +196,31 @@ struct Band: Codable, Hashable {
 }
 
 struct BandView: View {
-    let band: Band
+    @State var band: Band
+    
+    // Reference ladder to convert pixels to baise pairs (maybe add band and reference variables to Band
+    // Bind to state of parent view, such that making a band a reference ladder and attaching a reference value to it can redraw the values of all the other bands.
+    @Binding private var pixelToBasepairReferenceLadder: [PixelToBasePairArray]
     
     @State private var isShowingPopover: Bool = false
     // TODO: Remove default value
     @State var roundedBasePairSize: Int = 0
     
+    init(pixelToBasepairReferenceLadder: Binding<[PixelToBasePairArray]>, band: Band ) {
+        // initialize all variables first
+        self.roundedBasePairSize = band.bpSize
+        self._pixelToBasepairReferenceLadder = pixelToBasepairReferenceLadder
+      
+        self.roundedBasePairSize = 0
+        self.band = band
+        // Why isn't this called? Can't modify state variable in init. Why?
+//        self._pixelToBasepairReferenceLadder.append(PixelToBasePairArray(yPixel: 1, basePair: 1))
+//        self._pixelToBasepairReferenceLadder.append(PixelToBasePairArray(yPixel: 1, basePair: 2))
+        print(self._pixelToBasepairReferenceLadder)
+        
+//        pixelToBasepairReferenceLadder.append(PixelToBasePairArray(yPixel: 0, basePair: -1))
+    }
+
     func transformPixelToBasePairs(yPositionInPixels: Int, pixelToBasePairReference: [PixelToBasePairArray]) -> Double {
         
         if pixelToBasePairReference.count > 1 {
@@ -250,6 +269,7 @@ struct BandView: View {
             .onTapGesture(count: 2) {
 //                print("Double tapped!")
                 self.isShowingPopover = true
+                self.pixelToBasepairReferenceLadder.append(PixelToBasePairArray(yPixel: 1, basePair: 1))
                 
                 
 //                selectedBandItem = band
@@ -261,10 +281,12 @@ struct BandView: View {
                 Text("Band " + String(band.yMin))
                 Text("Convert reference band at position " + String(linearMappingFromPixelToBasePair(yPositionInPixels: band.yMin, slope: 1.0, yCross: 0.0)) + "px to base pairs").font(.headline).padding()
 //                // Better way to unwrap .last instead of !?
-//                TextField("What size does this band have?",  value: $pixelToBasepairReference.last!.basePair, format: .number)
+                TextField("What size does this band have?",  value: $pixelToBasepairReferenceLadder.last!.basePair, format: .number)
 //                // Show array of base pair sizes for the reference ladder
-//                Text("Ladder Px: " + (pixelToBasepairReference.map{element in String(element.yPixel)}.joined(separator: ",")))
-//                Text("Ladder Bp: " + (pixelToBasepairReference.map{element in String(element.basePair)}.joined(separator: ",")))
+                Text("Ladder Px: " + (pixelToBasepairReferenceLadder.map{element in String(element.yPixel)}.joined(separator: ",")))
+                Text("Ladder Bp: " + (pixelToBasepairReferenceLadder.map{element in String(element.basePair)}.joined(separator: ",")))
+                let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
+                //pixelToBasepairReferenceLadder.append(a)
             }
         }
     }
@@ -553,9 +575,9 @@ struct JSONContentUI: View {
     //Check Array
     @State private var results =  [Result]()
     
-    // @StateObject var users = Api()
     // Take an image and make a POST request
     @StateObject var api = Api()
+    @State var gelAnalysisResponse: [GelAnalysisResponse]? = nil
     
     // Image used to send as POST request
     @State var image:UIImage = UIImage()
@@ -573,7 +595,7 @@ struct JSONContentUI: View {
     // Sample data for initialization
     @State private var selectedBandItem:Band = Band(column: 1, bpSize: 100, intensity: "low", smear: "low", xid: "342qwasdf", confidence:1.0, xMin: 200, yMin: 100, xMax: 240, yMax: 140)
     // Reference ladder to convert pixels to baise pairs
-    @State private var pixelToBasepairReference: [PixelToBasePairArray] = [PixelToBasePairArray(yPixel: 0, basePair: 0)]
+    @State private var pixelToBasepairReference: [PixelToBasePairArray] = [PixelToBasePairArray(yPixel: 0, basePair: 1)]
     
     
     //    let url = URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!
@@ -853,6 +875,7 @@ struct JSONContentUI: View {
 
                     print("Analyse selected image 1")
                     for item in mediaItems.items {
+                        // TODO: Call the function but return something and store it into an object
                         api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage())
 //                        print("Analyse selected image")
 //                        print(api.gelAnalysisResponse)
@@ -905,7 +928,7 @@ struct JSONContentUI: View {
                                                             
 //                                                            let roundedBasePairSize: Int = Int( round(basePairSize*10)/10 )
 //                                                            Text(String(roundedBasePairSize))
-                                                            BandView(band: band)
+                                                            BandView(pixelToBasepairReferenceLadder: $pixelToBasepairReference, band: band)
 //                                                                .border(.green)
 //                                                                .foregroundColor(.black)
 //                                                                .font(.system(size: 12, weight: .light, design: .serif))
@@ -962,18 +985,21 @@ struct JSONContentUI: View {
 
                     Label("Settings", systemImage: "gear")
 
-                } // NavigationLink
-                                    }
+                  } // NavigationLink
+                }
+                // When images are selected, send them for analysis using the API with a POST requst
                 .onReceive(mediaItems.$items) { mitems in
 //               self.imageAdded = true
                     print("Image changed")
                     for item in mitems {
                         api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage())
+                        
+                        
                         print("Analyse selected image")
                         print(api.gelAnalysisResponse)
                     }
                    } // .onReceive
-                 } // List
+//                 } // List
                 } // NavigationView
 //                .navigationTitle("Gelly")
             } // else
@@ -1015,7 +1041,7 @@ struct JSONContentUI: View {
         //            print("invalid data")
         //        } // catch
         //    } // loadData
-//    } // struct
+    } // struct
     
     
     // Why Observable Object? Call this ViewModel?

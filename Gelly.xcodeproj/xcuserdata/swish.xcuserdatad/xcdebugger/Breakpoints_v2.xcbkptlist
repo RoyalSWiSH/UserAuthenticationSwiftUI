@@ -62,42 +62,10 @@
             filePath = "UserAuthenticationSwiftUI/Services/JSONLoader.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "549"
-            endingLineNumber = "549"
-            landmarkName = "JSONContentUI"
-            landmarkType = "14">
-            <Locations>
-               <Location
-                  uuid = "0C76794A-4DF3-45C3-994A-D867AC287178 - 87767cb22f8cc201"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Gelly.JSONContentUI.init(api: @autoclosure () -&gt; Gelly.Api, image: __C.UIImage, showImagePicker: Swift.Bool, mediaItems: Gelly.PickedMediaItems, imageLoader: Gelly.ImageLoaderForPOSTRequest) -&gt; Gelly.JSONContentUI"
-                  moduleName = "Gelly"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/swish/Dropbox/Coden/UserAuthenticationSwiftUI/UserAuthenticationSwiftUI/Services/JSONLoader.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "553"
-                  endingLineNumber = "553"
-                  offsetFromSymbolStart = "126">
-               </Location>
-               <Location
-                  uuid = "0C76794A-4DF3-45C3-994A-D867AC287178 - 6358f7ec6e6c9435"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Gelly.JSONContentUI.init() -&gt; Gelly.JSONContentUI"
-                  moduleName = "Gelly"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/swish/Dropbox/Coden/UserAuthenticationSwiftUI/UserAuthenticationSwiftUI/Services/JSONLoader.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "553"
-                  endingLineNumber = "553"
-                  offsetFromSymbolStart = "175">
-               </Location>
-            </Locations>
+            startingLineNumber = "571"
+            endingLineNumber = "571"
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
