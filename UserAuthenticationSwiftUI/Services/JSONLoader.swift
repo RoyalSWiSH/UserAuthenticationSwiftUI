@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import Combine
 
+
 // iOS 15 check can be removed since target plattform changed to iOS 15, look for better compatibility later
 
 
@@ -169,7 +170,7 @@ struct Column: Codable, Hashable {
 
 struct Band: Codable, Hashable {
     let column: Int
-    let bpSize: Int
+    var bpSize: Int // is not correctly assigned by remote analysis, since reference ladder is missing
     let intensity: String
     let smear: String
     //   let detection: String
@@ -213,15 +214,14 @@ struct BandView: View {
       
         self.roundedBasePairSize = 0
         self.band = band
-        // Why isn't this called? Can't modify state variable in init. Why?
-//        self._pixelToBasepairReferenceLadder.append(PixelToBasePairArray(yPixel: 1, basePair: 1))
-//        self._pixelToBasepairReferenceLadder.append(PixelToBasePairArray(yPixel: 1, basePair: 2))
+        // Note: Can't modify state variable in init.
+
         print(self._pixelToBasepairReferenceLadder)
-        
-//        pixelToBasepairReferenceLadder.append(PixelToBasePairArray(yPixel: 0, basePair: -1))
+
     }
 
-    func transformPixelToBasePairs(yPositionInPixels: Int, pixelToBasePairReference: [PixelToBasePairArray]) -> Double {
+    // TODO: Write test
+    func transformPixelToBasePairs(yPositionInPixels: Int, pixelToBasePairReference: [PixelToBasePairArray]) -> Int {
         
         if pixelToBasePairReference.count > 1 {
             
@@ -239,14 +239,19 @@ struct BandView: View {
             
             let slope = delta_basePair/delta_y
             
-            return linearMappingFromPixelToBasePair(yPositionInPixels:
-                                                        yPositionInPixels, slope: slope, yCross: 0)
+            // Calculate intersection with y-axis
+            
+            let yCross = Double(max_basePair!) - slope * Double(max_y!)
+            
+            return Int(linearMappingFromPixelToBasePair(yPositionInPixels:
+                                                        yPositionInPixels, slope: slope, yCross: yCross))
         }
         else {
-            return Double(yPositionInPixels)
+            return Int(yPositionInPixels)
         }
     }
     
+    // TODO: Write test
     func linearMappingFromPixelToBasePair(yPositionInPixels: Int, slope: Double, yCross: Double) -> Double {
         // Linear mapping of pixels to base pairs. This is a very simplistic way to calculate this. Better linear regression, which requires CreateML and an M1 Chip.
         // yPositionInPixels: Position of the band on the image in pixels
@@ -265,11 +270,10 @@ struct BandView: View {
         //                                                            let roundedBasePairSize: Int = Int( round(basePairSize*10)/10 )
         
         VStack {
-            Text(String(band.yMin))
+            Text(String(transformPixelToBasePairs(yPositionInPixels: band.yMin, pixelToBasePairReference: pixelToBasepairReferenceLadder)))
             .onTapGesture(count: 2) {
-//                print("Double tapped!")
                 self.isShowingPopover = true
-                self.pixelToBasepairReferenceLadder.append(PixelToBasePairArray(yPixel: 1, basePair: 1))
+                
                 
                 
 //                selectedBandItem = band
@@ -279,18 +283,31 @@ struct BandView: View {
             .popover(isPresented: $isShowingPopover) {
 //                print("hallo")
                 Text("Band " + String(band.yMin))
-                Text("Convert reference band at position " + String(linearMappingFromPixelToBasePair(yPositionInPixels: band.yMin, slope: 1.0, yCross: 0.0)) + "px to base pairs").font(.headline).padding()
+                Text("Convert reference band at position " + String(transformPixelToBasePairs(yPositionInPixels: band.yMin, pixelToBasePairReference: pixelToBasepairReferenceLadder)) + "px to base pairs").font(.headline).padding()
 //                // Better way to unwrap .last instead of !?
-                TextField("What size does this band have?",  value: $pixelToBasepairReferenceLadder.last!.basePair, format: .number)
+//                TextField("What size does this band have?",  value: $pixelToBasepairReferenceLadder.last!.basePair, format: .number)
+                TextField("What size does this band have?",  value: $band.bpSize, format: .number)
 //                // Show array of base pair sizes for the reference ladder
                 Text("Ladder Px: " + (pixelToBasepairReferenceLadder.map{element in String(element.yPixel)}.joined(separator: ",")))
                 Text("Ladder Bp: " + (pixelToBasepairReferenceLadder.map{element in String(element.basePair)}.joined(separator: ",")))
-                let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
+//                let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
+                Button("Mark as reference band") {
+                    self.pixelToBasepairReferenceLadder.append(PixelToBasePairArray(yPixel: band.yMin, basePair: band.bpSize))
+                }
                 //pixelToBasepairReferenceLadder.append(a)
             }
         }
     }
 }
+
+//final class StringExtensionsTests: XCTestCase {
+//    func testUppercaseFirst() {
+//        let input = "antoine"
+//        let expectedOutput = 0
+//        let bandView = BandView()
+//        XCTAssertEqual(bandView.linearMappingFromPixelToBasePair(yPositionInPixels: 0, slope: 0, yCross: 0), expectedOutput, "The String is not correctly capitalized.")
+//    }
+//}
 
 extension GelAnalysisResponse {
     
@@ -577,7 +594,7 @@ struct JSONContentUI: View {
     
     // Take an image and make a POST request
     @StateObject var api = Api()
-    @State var gelAnalysisResponse: [GelAnalysisResponse]? = nil
+    @State var gelAnalysisResponse = [GelAnalysisResponse]()
     
     // Image used to send as POST request
     @State var image:UIImage = UIImage()
@@ -595,7 +612,7 @@ struct JSONContentUI: View {
     // Sample data for initialization
     @State private var selectedBandItem:Band = Band(column: 1, bpSize: 100, intensity: "low", smear: "low", xid: "342qwasdf", confidence:1.0, xMin: 200, yMin: 100, xMax: 240, yMax: 140)
     // Reference ladder to convert pixels to baise pairs
-    @State private var pixelToBasepairReference: [PixelToBasePairArray] = [PixelToBasePairArray(yPixel: 0, basePair: 1)]
+    @State private var pixelToBasepairReference = [PixelToBasePairArray]()
     
     
     //    let url = URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!
@@ -682,7 +699,9 @@ struct JSONContentUI: View {
                     // TODO: Figure out how to get individual popover at the position of the band on iPad
                     Button("Analyze") { print("Analyse selected image 4")
                         for item in mediaItems.items {
-                            api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage())
+                            api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage()) {result in
+                                
+                            }
                             print("Analyse selected image")
                             print(api.gelAnalysisResponse)}}
 //                    .popover(isPresented: $showPopover2) {
@@ -872,11 +891,13 @@ struct JSONContentUI: View {
             .sheet(isPresented: $showImagePicker, content: {
                 PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
                     showImagePicker = false
-
+ 
                     print("Analyse selected image 1")
                     for item in mediaItems.items {
                         // TODO: Call the function but return something and store it into an object
-                        api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage())
+                        api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage()) {result in
+                            
+                        }
 //                        print("Analyse selected image")
 //                        print(api.gelAnalysisResponse)
                     }
@@ -891,6 +912,10 @@ struct JSONContentUI: View {
                             
                             //                Text("Welcome to SnowSeeker!")
                             List(mediaItems.items, id: \.id) {item in
+                                if self.gelAnalysisResponse.isEmpty {
+                                    // TODO: Better placement or overlay over image
+                                        ProgressView("Analyzing Gel Image...")
+                                                   }
                                 ZStack(alignment: .topLeading) {
                                     if item.mediaType == .photo {
                                         
@@ -900,7 +925,10 @@ struct JSONContentUI: View {
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
                                         // this overlay section is a dublication as in AsyncImage below, TODO: move out to and consolidate in separate function.
+                                        
                                             .overlay(
+//                                                self.gelAnalysisResponse.isEmpty ? ZStack{ProgressView("Analyzing Gel Image...")} : nil
+//
                                                 // Overlay of gel bands
                                                 GeometryReader { geo in
                                                     
@@ -928,6 +956,7 @@ struct JSONContentUI: View {
                                                             
 //                                                            let roundedBasePairSize: Int = Int( round(basePairSize*10)/10 )
 //                                                            Text(String(roundedBasePairSize))
+                                                            
                                                             BandView(pixelToBasepairReferenceLadder: $pixelToBasepairReference, band: band)
 //                                                                .border(.green)
 //                                                                .foregroundColor(.black)
@@ -958,11 +987,14 @@ struct JSONContentUI: View {
                                                             
                                                         } // ForEach
                                                     }  // ForEach
+                                          
                                                 } // GeometryReader
+//                                            } //else
                                             ) // overlay
                                         
                                     } // item.mediaType == .photo
                                 } // ZStack
+                                                                             
                             } // List
                             .navigationBarItems(leading: Button(action: {}, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")})        .sheet(isPresented: $showImagePicker, content: {
                                 PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
@@ -992,9 +1024,11 @@ struct JSONContentUI: View {
 //               self.imageAdded = true
                     print("Image changed")
                     for item in mitems {
-                        api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage())
-                        
-                        
+                        api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage()) { result in
+                            self.gelAnalysisResponse.append(result!) //TODO: Catch error when unwrapping
+//                            (self.gelAnalysisResponse.append(result)) ?? (self.gelAnalysisResponse = [result])
+                        }
+
                         print("Analyse selected image")
                         print(api.gelAnalysisResponse)
                     }
@@ -1061,7 +1095,8 @@ struct JSONContentUI: View {
         
         // Take an UIImage, form a POST request and send it to analysis to obtain positions of bands and appends it to gelAnalysisResponse
         // Why not return response instead of appending to @Published state object?
-        func getGelImageMetaData(fileName: String, image: UIImage) {
+        // Take a function that is executed when fetching data is completed and assigns the result to gelAnalysisResponse in view JSONContentUI
+        func getGelImageMetaData(fileName: String, image: UIImage, completion: @escaping (GelAnalysisResponse?) -> Void) {
             
             
             // let url = URL(string: "http://127.0.0.1:1324/api/v1/electrophoresis/imageanalysis")
@@ -1095,7 +1130,10 @@ struct JSONContentUI: View {
                         let json = try JSONDecoder().decode(GelAnalysisResponse.self, from: data)
                         print(json)
                         DispatchQueue.main.async {
+                            // Deprecated, use completion instead of gelAnalysisResponse as published state object
                             self.gelAnalysisResponse.append(json)
+                            // call completion function in view to return data
+                            completion(json)
                             print("Ergebnis Titel")
                             print(json.meta.title)
                             print("Koordinaten yMin:")
