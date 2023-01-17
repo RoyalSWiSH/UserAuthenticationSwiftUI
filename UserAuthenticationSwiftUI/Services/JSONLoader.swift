@@ -9,6 +9,8 @@ import Foundation
 import SwiftUI
 import Combine
 
+import Accelerate
+
 
 // iOS 15 check can be removed since target plattform changed to iOS 15, look for better compatibility later
 
@@ -225,26 +227,59 @@ struct BandView: View {
         
         if pixelToBasePairReference.count > 1 {
             
+            // Get the first band in the ladder on the upper image side with a larger DNA fragment size. x2
+            let upperBand = pixelToBasePairReference.max { a, b in a.yPixel < b.yPixel }
+            // Get the last band in the ladder on the lower image side with a smaller DNA fragment size. x1
+            let lowerBand = pixelToBasePairReference.min { a, b in a.yPixel < b.yPixel }
+            
+           
+            
+            // deprecated
             let max_y = pixelToBasePairReference.map { $0.yPixel }.max()
             let min_y = pixelToBasePairReference.map { $0.yPixel }.min()
             
-            let delta_y = Double(max_y! - min_y!)
+
             
             // TOOD: Get Index of max value
-            
+            // deprecated
             let max_basePair = pixelToBasePairReference.map { $0.basePair }.max()
             let min_basePair = pixelToBasePairReference.map { $0.basePair }.min()
             
-            let delta_basePair = Double(max_basePair! - min_basePair!)
-            
-            let slope = delta_basePair/delta_y
+        
+            // keep slope negative
+            let slope = Double(max_basePair! - min_basePair!)/Double(max_y! - min_y!)
             
             // Calculate intersection with y-axis
             
             let yCross = Double(max_basePair!) - slope * Double(max_y!)
             
-            return Int(linearMappingFromPixelToBasePair(yPositionInPixels:
-                                                        yPositionInPixels, slope: slope, yCross: yCross))
+            // Some temporary code to fit power function instead of linear
+            var r = Double((log(Float(min_basePair!))-log(Float(max_basePair!)))/(log(Float(max_y!))-log(Float(min_y!))))
+            var c = Double(min_y!)/pow(Double(min_basePair!), Double(r))
+            
+//            c = 1802.563
+//            r = -0.140702
+            
+            let lin_max_basePair = log(Float(upperBand!.basePair))
+            let lin_min_basePair = log(Float(lowerBand!.basePair))
+            
+            let lin_slope = Double(lin_max_basePair - lin_min_basePair)/Double(upperBand!.yPixel - lowerBand!.yPixel)
+            let lin_Cross = Double(lin_max_basePair) - lin_slope * Double(upperBand!.yPixel)
+            
+            let expCross = pow(2.71828, lin_Cross)
+            
+            return Int(powerMappingFromPixelToBasePair(yPositionInPixels: yPositionInPixels, exponent: lin_slope, yCross: expCross))
+            
+//            return Int(exponentialMappingFromPixelToBasePair(yPositionInPixels: yPositionInPixels, exponent: r, yCross: c))
+//            let basePairArray = pixelToBasePairReference.map { $0.basePair }
+//            let yArray = pixelToBasePairReference.map { $0.yPixel }
+//            var intercept: Double
+//            var slope2: Double
+//            vDSP.lsqPower()
+//            var results = vDSP.power(basePairArray, yArray, n: basePairArray.count, m: 1, inter: &intercept, slope: &slope2)
+            
+//            return Int(linearMappingFromPixelToBasePair(yPositionInPixels:
+//                                                        yPositionInPixels, slope: slope, yCross: yCross))
         }
         else {
             return Int(yPositionInPixels)
@@ -259,6 +294,20 @@ struct BandView: View {
         // yCross: Crossing of slope with y-axis
         return Double(Double(yPositionInPixels)*slope+yCross)
     }
+    
+    // y = C*x^(r)
+    func exponentialMappingFromPixelToBasePair(yPositionInPixels: Int, exponent: Double, yCross: Double) -> Double {
+        let a = yCross*pow(Double(yPositionInPixels), exponent)
+        
+        return yCross*pow(Double(yPositionInPixels), exponent)
+    }
+    
+    // y = C*e^(r*x)
+    func powerMappingFromPixelToBasePair(yPositionInPixels: Int, exponent: Double, yCross: Double) -> Double {
+        //let a = yCross*pow(Double(yPositionInPixels), exponent)
+        
+        return yCross*pow(Double(2.71828), (exponent*Double(yPositionInPixels)))
+    }
     var body: some View {
         
         
@@ -270,7 +319,8 @@ struct BandView: View {
         //                                                            let roundedBasePairSize: Int = Int( round(basePairSize*10)/10 )
         
         VStack {
-            Text(String(transformPixelToBasePairs(yPositionInPixels: band.yMin, pixelToBasePairReference: pixelToBasepairReferenceLadder)))
+        
+            Text((band.intensity == "pocket") ? "Pocket" : String(transformPixelToBasePairs(yPositionInPixels: band.yMin, pixelToBasePairReference: pixelToBasepairReferenceLadder)) )
             .onTapGesture(count: 2) {
                 self.isShowingPopover = true
                 
