@@ -62,42 +62,10 @@
             filePath = "UserAuthenticationSwiftUI/Services/JSONLoader.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "638"
-            endingLineNumber = "638"
-            landmarkName = "FittingError"
-            landmarkType = "13">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "142C21CB-C390-4610-BCAF-F1D0D64D2A7A"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "UserAuthenticationSwiftUI/Services/JSONLoader.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "259"
-            endingLineNumber = "259"
-            landmarkName = "transformPixelToBasePairs(yPositionInPixels:pixelToBasePairReference:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "D197B4F6-385A-4DF9-A2D8-12F3B444922F"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "UserAuthenticationSwiftUI/Services/JSONLoader.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "301"
-            endingLineNumber = "301"
-            landmarkName = "exponentialMappingFromPixelToBasePair(yPositionInPixels:exponent:yCross:)"
-            landmarkType = "7">
+            startingLineNumber = "630"
+            endingLineNumber = "630"
+            landmarkName = "JSONContentUI"
+            landmarkType = "14">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -110,8 +78,8 @@
             filePath = "UserAuthenticationSwiftUI/Services/JSONLoader.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "234"
-            endingLineNumber = "234"
+            startingLineNumber = "236"
+            endingLineNumber = "236"
             landmarkName = "transformPixelToBasePairs(yPositionInPixels:pixelToBasePairReference:)"
             landmarkType = "7">
          </BreakpointContent>

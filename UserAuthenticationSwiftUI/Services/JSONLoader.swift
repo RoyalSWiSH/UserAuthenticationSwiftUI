@@ -209,6 +209,8 @@ struct BandView: View {
     // TODO: Remove default value
     @State var roundedBasePairSize: Int = 0
     
+    var fontSize: Int = 14
+    
     init(pixelToBasepairReferenceLadder: Binding<[PixelToBasePairArray]>, band: Band ) {
         // initialize all variables first
         self.roundedBasePairSize = band.bpSize
@@ -231,55 +233,17 @@ struct BandView: View {
             let upperBand = pixelToBasePairReference.max { a, b in a.yPixel < b.yPixel }
             // Get the last band in the ladder on the lower image side with a smaller DNA fragment size. x1
             let lowerBand = pixelToBasePairReference.min { a, b in a.yPixel < b.yPixel }
-            
-           
-            
-            // deprecated
-            let max_y = pixelToBasePairReference.map { $0.yPixel }.max()
-            let min_y = pixelToBasePairReference.map { $0.yPixel }.min()
-            
-
-            
-            // TOOD: Get Index of max value
-            // deprecated
-            let max_basePair = pixelToBasePairReference.map { $0.basePair }.max()
-            let min_basePair = pixelToBasePairReference.map { $0.basePair }.min()
-            
-        
-            // keep slope negative
-            let slope = Double(max_basePair! - min_basePair!)/Double(max_y! - min_y!)
-            
-            // Calculate intersection with y-axis
-            
-            let yCross = Double(max_basePair!) - slope * Double(max_y!)
-            
-            // Some temporary code to fit power function instead of linear
-            var r = Double((log(Float(min_basePair!))-log(Float(max_basePair!)))/(log(Float(max_y!))-log(Float(min_y!))))
-            var c = Double(min_y!)/pow(Double(min_basePair!), Double(r))
-            
-//            c = 1802.563
-//            r = -0.140702
-            
+                 
             let lin_max_basePair = log(Float(upperBand!.basePair))
             let lin_min_basePair = log(Float(lowerBand!.basePair))
             
             let lin_slope = Double(lin_max_basePair - lin_min_basePair)/Double(upperBand!.yPixel - lowerBand!.yPixel)
             let lin_Cross = Double(lin_max_basePair) - lin_slope * Double(upperBand!.yPixel)
             
-            let expCross = pow(2.71828, lin_Cross)
+            let expCross = exp(lin_Cross)
             
-            return Int(powerMappingFromPixelToBasePair(yPositionInPixels: yPositionInPixels, exponent: lin_slope, yCross: expCross))
+            return Int(round(powerMappingFromPixelToBasePair(yPositionInPixels: yPositionInPixels, exponent: lin_slope, yCross: expCross)))
             
-//            return Int(exponentialMappingFromPixelToBasePair(yPositionInPixels: yPositionInPixels, exponent: r, yCross: c))
-//            let basePairArray = pixelToBasePairReference.map { $0.basePair }
-//            let yArray = pixelToBasePairReference.map { $0.yPixel }
-//            var intercept: Double
-//            var slope2: Double
-//            vDSP.lsqPower()
-//            var results = vDSP.power(basePairArray, yArray, n: basePairArray.count, m: 1, inter: &intercept, slope: &slope2)
-            
-//            return Int(linearMappingFromPixelToBasePair(yPositionInPixels:
-//                                                        yPositionInPixels, slope: slope, yCross: yCross))
         }
         else {
             return Int(yPositionInPixels)
@@ -297,7 +261,6 @@ struct BandView: View {
     
     // y = C*x^(r)
     func exponentialMappingFromPixelToBasePair(yPositionInPixels: Int, exponent: Double, yCross: Double) -> Double {
-        let a = yCross*pow(Double(yPositionInPixels), exponent)
         
         return yCross*pow(Double(yPositionInPixels), exponent)
     }
@@ -306,47 +269,76 @@ struct BandView: View {
     func powerMappingFromPixelToBasePair(yPositionInPixels: Int, exponent: Double, yCross: Double) -> Double {
         //let a = yCross*pow(Double(yPositionInPixels), exponent)
         
-        return yCross*pow(Double(2.71828), (exponent*Double(yPositionInPixels)))
+        return yCross*exp((exponent*Double(yPositionInPixels)))
     }
+    
+    func calcBandError(bandSize: Int) -> Int {
+        return Int(ceil(Double(bandSize) * 0.25))
+    }
+    
+    func calcBandWidth(band: Band) -> Int {
+        return band.xMax-band.xMin
+    }
+    
     var body: some View {
         
         
-        //                                                            let yPosition = band.yMin
-        //
-        //                                                            let basePairSize:Double = transformPixelToBasePairs(yPositionInPixels: yPosition, pixelToBasePairReference: pixelToBasepairReference)
-        //
-                                                                    
-        //                                                            let roundedBasePairSize: Int = Int( round(basePairSize*10)/10 )
-        
         VStack {
-        
-            Text((band.intensity == "pocket") ? "Pocket" : String(transformPixelToBasePairs(yPositionInPixels: band.yMin, pixelToBasePairReference: pixelToBasepairReferenceLadder)) )
-            .onTapGesture(count: 2) {
-                self.isShowingPopover = true
-                
-                
-                
+//            if UIScreen.main.bounds.size.width < 100 {
+//                fontSize = 10
+//            } else {
+//                fontSize = 14
+//            }
+            
+            Text((band.intensity == "pocket" || pixelToBasepairReferenceLadder.count < 2) ? "" : String(transformPixelToBasePairs(yPositionInPixels: ((band.yMin+band.yMax)/2), pixelToBasePairReference: pixelToBasepairReferenceLadder)) )
+//                .border(.green)
+                .foregroundColor(.black)
+                .font(.system(size: 14, weight: .light, design: .default))
+//                .minimumScaleFactor(0.01)
+                .padding(CGFloat(3))
+                .minimumScaleFactor(0.3)
+            
+        } // VStack
+        .frame(minWidth:10, idealWidth: 15, maxWidth: 50, minHeight: 5, idealHeight:5, maxHeight: 20, alignment: .center)
+        .background(Color.white.opacity(0.6))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .onTapGesture(count: 2) {
+            self.isShowingPopover = true
+            
+            
+            
 //                selectedBandItem = band
 //                let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
 //                pixelToBasepairReference.append(a)
-            }
-            .popover(isPresented: $isShowingPopover) {
-//                print("hallo")
-                Text("Band " + String(band.yMin))
-                Text("Convert reference band at position " + String(transformPixelToBasePairs(yPositionInPixels: band.yMin, pixelToBasePairReference: pixelToBasepairReferenceLadder)) + "px to base pairs").font(.headline).padding()
+        }
+        .popover(isPresented: $isShowingPopover) {
+           
+            let bandSize = transformPixelToBasePairs(yPositionInPixels: ((band.yMin+band.yMax)/2), pixelToBasePairReference: pixelToBasepairReferenceLadder)
+            let bandError = calcBandError(bandSize: bandSize)
+
+            Text("Band has a size of \(bandSize) +- \(bandError) bp (25 %)").font(.headline).padding()
+            Text("Band is at position " + String((band.yMin+band.yMax)/2) + " px")
 //                // Better way to unwrap .last instead of !?
 //                TextField("What size does this band have?",  value: $pixelToBasepairReferenceLadder.last!.basePair, format: .number)
-                TextField("What size does this band have?",  value: $band.bpSize, format: .number)
+            TextField("What size does this band have?",  value: $band.bpSize, format: .number)
 //                // Show array of base pair sizes for the reference ladder
-                Text("Ladder Px: " + (pixelToBasepairReferenceLadder.map{element in String(element.yPixel)}.joined(separator: ",")))
-                Text("Ladder Bp: " + (pixelToBasepairReferenceLadder.map{element in String(element.basePair)}.joined(separator: ",")))
+            Text("Ladder Px: " + (pixelToBasepairReferenceLadder.map{element in String(element.yPixel)}.joined(separator: ",")))
+            Text("Ladder Bp: " + (pixelToBasepairReferenceLadder.map{element in String(element.basePair)}.joined(separator: ",")))
 //                let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
-                Button("Mark as reference band") {
-                    self.pixelToBasepairReferenceLadder.append(PixelToBasePairArray(yPixel: band.yMin, basePair: band.bpSize))
-                }
-                //pixelToBasepairReferenceLadder.append(a)
+            Button("Mark as reference band") {
+                self.pixelToBasepairReferenceLadder.append(PixelToBasePairArray(yPixel:( (band.yMin+band.yMax)/2), basePair: band.bpSize))
             }
-        }
+            
+            if UIDevice.current.userInterfaceIdiom == .phone {
+                Button("Close popup") {
+                    // TODO: Make an x top right
+                    self.isShowingPopover = false
+                } // Button
+            } // Check UIDevice
+//                } // popover
+            //pixelToBasepairReferenceLadder.append(a)
+        } // popover
+        
     }
 }
 
@@ -664,6 +656,15 @@ struct JSONContentUI: View {
     // Reference ladder to convert pixels to baise pairs
     @State private var pixelToBasepairReference = [PixelToBasePairArray]()
     
+    @State private var showingAlertSavedImage = false
+    
+    @State private var bandColumns = [Column]()
+    
+    
+    // Not used 27. Jan 2023
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    
+    
     
     //    let url = URL(string: "https://theminione.com/wp-content/uploads/2016/04/agarose-gel-electrophoresis-dna.jpg")!
     ////     TODO: Figure out how to use url with correct init, then remoce ImageLoaderForPOSTRequest, it is redundant
@@ -689,6 +690,11 @@ struct JSONContentUI: View {
     
     func getResizeAdjustedVerticalPostition(geo: GeometryProxy, band: Band, imageHeight: Double) -> CGFloat {
         return CGFloat(CGFloat((band.yMin+band.yMax)/2) * (geo.size.height / (imageHeight)))
+    }
+    
+    func getDocumentsDirectory() -> URL {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        return paths[0]
     }
     
 //    func transformPixelToBasePairs(yPositionInPixels: Int, pixelToBasePairReference: [PixelToBasePairArray]) -> Double {
@@ -741,7 +747,7 @@ struct JSONContentUI: View {
         //            await loadData()
         //        }
         // TODO: Replace with NavigationSplitView, but thats iOS 16 only
-        if UIDevice.current.userInterfaceIdiom == .phone {
+        if UIDevice.current.userInterfaceIdiom == .pad {
             NavigationView {
 
                 VStack{
@@ -965,8 +971,12 @@ struct JSONContentUI: View {
                                 if self.gelAnalysisResponse.isEmpty {
                                     // TODO: Better placement or overlay over image
                                         ProgressView("Analyzing Gel Image...")
-                                                   }
-                                ZStack(alignment: .topLeading) {
+                                }
+                                else if self.pixelToBasepairReference.count < 2 {
+                                    Text("Select two bands per double tap as reference and assign a size.")
+                                }
+                                
+                                let imageViewWithOverlay = ZStack(alignment: .topLeading) {
                                     if item.mediaType == .photo {
                                         
                                         let image = item.photo ?? UIImage()
@@ -987,6 +997,8 @@ struct JSONContentUI: View {
                                                     ForEach(api.gelAnalysisResponse, id: \.self) { gelImage in
                                                         
                                                         ForEach(gelImage.bands, id: \.self) { band in
+                                                            
+                                                           
                                                             // MARK: Visual highlighting of gel bands and band size text formatting
                                                             //                Rectangle()
                                                             //                        .stroke(lineWidth: 2)
@@ -1033,6 +1045,24 @@ struct JSONContentUI: View {
                                                             // The divide by 8.4 part are hard coded scale factors to match coordinates from object detection to UI. TODO: Make fit overlay and coordiante transformations universal - 29. Okt 2022 DONE
                                                             
                                                                 .position(x: getResizeAdjustedHorizontalPostition(geo: geo, band: band, imageWidth: image.size.width), y: getResizeAdjustedVerticalPostition(geo: geo, band: band, imageHeight: image.size.height))
+                                                            // Change band box and text size based on iPhone orientation. Why small number 0.065 to get any effect?.
+                                                            // TODO: Check for iPad device and orientation (less shrinking in portrait mode on iPad)
+                                                            // TODO: Sometimes the adjustment is only recognized when turning back and forth again
+                                                                .frame(width: geo.size.width * (UIDevice.current.orientation.isPortrait ? 0.07 : 1.6), height: geo.size.height * (UIDevice.current.orientation.isPortrait ? 0.07 : 1.2))
+                                                                .onAppear() {
+                                                                    // Simple attempt to create columns that can have a name by identifying pockets. Those pockets might not exist or be detected. Better would be clustering of band coordinates, which would require ML
+                                                                    if band.intensity == "pocket" {
+                                                                       
+                                                                        if bandColumns.isEmpty {
+                                                                            bandColumns.append(Column(index: 0, name: "Pocket 1" ))
+                                                                        }
+                                                                        else {
+                                                                        bandColumns.append(Column(index: (bandColumns.last!.index+1), name: "Pocket " + String(bandColumns.last!.index+1) ))
+                                                                            print(bandColumns.last!.index)
+                                                                        }
+                                                                        
+                                                                    }
+                                                                }
                                                             
                                                             
                                                         } // ForEach
@@ -1041,10 +1071,38 @@ struct JSONContentUI: View {
                                                 } // GeometryReader
 //                                            } //else
                                             ) // overlay
+                                            .onTapGesture(count: 2) {
+                                                
+                                            }
                                         
                                     } // item.mediaType == .photo
                                 } // ZStack
-                                                                             
+                                imageViewWithOverlay
+                                
+                                
+                                
+                                if #available(iOS 16, *) {
+                                    // Run code in iOS 15 or later.
+                                //    ShareLink("Export", item: imageViewWithOverlay, preview: SharePreview(Text("Shared image"), image: imageViewWithOverlay))
+                                } else {
+                                    // Fall back to earlier iOS APIs.
+                                    Button("Save image to library") {
+                                                    let image = imageViewWithOverlay.snapshot()
+
+                                                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                                                    showingAlertSavedImage = true
+                                     }
+                                    .alert("Image saved. To view and share go to image library.", isPresented: $showingAlertSavedImage) {
+                                                Button("OK", role: .cancel) { }
+                                            }
+                                }
+
+//                                let renderer = ImageRenderer(content: imageViewWithOverlay)
+//                                if let uiImage = renderer.uiImage {
+//                                    // use the rendered image somehow
+//                                    ShareLink("Export", item: renderedImage, preview: SharePreview(Text("Shared image"), image: renderedImage))
+//                                }
+//
                             } // List
                             .navigationBarItems(leading: Button(action: {}, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")})        .sheet(isPresented: $showImagePicker, content: {
                                 PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
@@ -1055,7 +1113,7 @@ struct JSONContentUI: View {
                             
                             
                         } // VStack
-                        .navigationBarTitle(Text("Foo"))
+                        .navigationBarTitle(Text("Gel Images"))
        
                     } // NavigationLink
                 label: {
@@ -1148,7 +1206,7 @@ struct JSONContentUI: View {
         // Take a function that is executed when fetching data is completed and assigns the result to gelAnalysisResponse in view JSONContentUI
         func getGelImageMetaData(fileName: String, image: UIImage, completion: @escaping (GelAnalysisResponse?) -> Void) {
             
-            
+            // TODO: Remove hardcoded URL
             // let url = URL(string: "http://127.0.0.1:1324/api/v1/electrophoresis/imageanalysis")
             let url = URL(string: "http://167.172.190.93:1324/api/v1/electrophoresis/imageanalysis")
             let boundary = UUID().uuidString
@@ -1251,6 +1309,24 @@ extension Data {
     mutating func append(_ string: String, using encoding: String.Encoding = .utf8) {
         if let data1 = string.data(using: encoding) {
             append(data1)
+        }
+    }
+}
+
+// View extension to export views of gel images as PNG, required below iOS 16, with current iOS 16 use ImageRenderer
+extension View {
+    func snapshot() -> UIImage {
+        let controller = UIHostingController(rootView: self)
+        let view = controller.view
+
+        let targetSize = controller.view.intrinsicContentSize
+        view?.bounds = CGRect(origin: .zero, size: targetSize)
+        view?.backgroundColor = .clear
+
+        let renderer = UIGraphicsImageRenderer(size: targetSize)
+
+        return renderer.image { _ in
+            view?.drawHierarchy(in: controller.view.bounds, afterScreenUpdates: true)
         }
     }
 }
