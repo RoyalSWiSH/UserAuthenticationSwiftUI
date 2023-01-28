@@ -162,7 +162,7 @@ struct Detection: Codable, Hashable {
 
 struct Column: Codable, Hashable {
     let index: Int
-    let name: String
+    var name: String
     
     enum CodingKeys: String, CodingKey {
         case index = "index"
@@ -171,7 +171,7 @@ struct Column: Codable, Hashable {
 }
 
 struct Band: Codable, Hashable {
-    let column: Int
+    var column: Column
     var bpSize: Int // is not correctly assigned by remote analysis, since reference ladder is missing
     let intensity: String
     let smear: String
@@ -205,6 +205,8 @@ struct BandView: View {
     // Bind to state of parent view, such that making a band a reference ladder and attaching a reference value to it can redraw the values of all the other bands.
     @Binding private var pixelToBasepairReferenceLadder: [PixelToBasePairArray]
     
+    @State var columnName: String
+    
     @State private var isShowingPopover: Bool = false
     // TODO: Remove default value
     @State var roundedBasePairSize: Int = 0
@@ -218,6 +220,14 @@ struct BandView: View {
       
         self.roundedBasePairSize = 0
         self.band = band
+//        self.bandName = ""
+        
+        if band.intensity == "pocket" {
+        self.columnName = "Sample " + String(band.column.index)
+        }
+        else {
+            self.columnName = ""
+        }
         // Note: Can't modify state variable in init.
 
         print(self._pixelToBasepairReferenceLadder)
@@ -290,7 +300,8 @@ struct BandView: View {
 //                fontSize = 14
 //            }
             
-            Text((band.intensity == "pocket" || pixelToBasepairReferenceLadder.count < 2) ? "" : String(transformPixelToBasePairs(yPositionInPixels: ((band.yMin+band.yMax)/2), pixelToBasePairReference: pixelToBasepairReferenceLadder)) )
+            Text((band.intensity == "pocket" || pixelToBasepairReferenceLadder.count < 2) ? columnName  : String(transformPixelToBasePairs(yPositionInPixels: ((band.yMin+band.yMax)/2), pixelToBasePairReference: pixelToBasepairReferenceLadder)) )
+//            Text(band.column.name)
 //                .border(.green)
                 .foregroundColor(.black)
                 .font(.system(size: 14, weight: .light, design: .default))
@@ -313,21 +324,32 @@ struct BandView: View {
         }
         .popover(isPresented: $isShowingPopover) {
            
-            let bandSize = transformPixelToBasePairs(yPositionInPixels: ((band.yMin+band.yMax)/2), pixelToBasePairReference: pixelToBasepairReferenceLadder)
-            let bandError = calcBandError(bandSize: bandSize)
 
-            Text("Band has a size of \(bandSize) +- \(bandError) bp (25 %)").font(.headline).padding()
-            Text("Band is at position " + String((band.yMin+band.yMax)/2) + " px")
-//                // Better way to unwrap .last instead of !?
-//                TextField("What size does this band have?",  value: $pixelToBasepairReferenceLadder.last!.basePair, format: .number)
-            TextField("What size does this band have?",  value: $band.bpSize, format: .number)
-//                // Show array of base pair sizes for the reference ladder
+
+            if band.intensity == "pocket" {
+                Text("Edit column name").font(.headline).padding()
+                TextField("What name does the column have?",  text: $columnName)
+            }
+            else {
+                let bandSize = transformPixelToBasePairs(yPositionInPixels: ((band.yMin+band.yMax)/2), pixelToBasePairReference: pixelToBasepairReferenceLadder)
+                let bandError = calcBandError(bandSize: bandSize)
+
+                Text("Band has a size of \(bandSize) +- \(bandError) bp (25 %)").font(.headline).padding()
+                Text("Band is at position " + String((band.yMin+band.yMax)/2) + " px")
+    //                // Better way to unwrap .last instead of !?
+    //                TextField("What size does this band have?",  value: $pixelToBasepairReferenceLadder.last!.basePair, format: .number)
+               
+                TextField("What size does this band have?",  value: $band.bpSize, format: .number)
+                Button("Mark as reference band") {
+                    self.pixelToBasepairReferenceLadder.append(PixelToBasePairArray(yPixel:( (band.yMin+band.yMax)/2), basePair: band.bpSize))
+                }
+            }
+            
+            // Show array of base pair sizes for the reference ladder
             Text("Ladder Px: " + (pixelToBasepairReferenceLadder.map{element in String(element.yPixel)}.joined(separator: ",")))
             Text("Ladder Bp: " + (pixelToBasepairReferenceLadder.map{element in String(element.basePair)}.joined(separator: ",")))
 //                let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
-            Button("Mark as reference band") {
-                self.pixelToBasepairReferenceLadder.append(PixelToBasePairArray(yPixel:( (band.yMin+band.yMax)/2), basePair: band.bpSize))
-            }
+           
             
             if UIDevice.current.userInterfaceIdiom == .phone {
                 Button("Close popup") {
@@ -652,7 +674,7 @@ struct JSONContentUI: View {
     
     
     // Sample data for initialization
-    @State private var selectedBandItem:Band = Band(column: 1, bpSize: 100, intensity: "low", smear: "low", xid: "342qwasdf", confidence:1.0, xMin: 200, yMin: 100, xMax: 240, yMax: 140)
+    @State private var selectedBandItem:Band = Band(column: Column(index: 0, name: ""), bpSize: 100, intensity: "low", smear: "low", xid: "342qwasdf", confidence:1.0, xMin: 200, yMin: 100, xMax: 240, yMax: 140)
     // Reference ladder to convert pixels to baise pairs
     @State private var pixelToBasepairReference = [PixelToBasePairArray]()
     
@@ -1018,6 +1040,7 @@ struct JSONContentUI: View {
                                                             
 //                                                            let roundedBasePairSize: Int = Int( round(basePairSize*10)/10 )
 //                                                            Text(String(roundedBasePairSize))
+                                                           
                                                             
                                                             BandView(pixelToBasepairReferenceLadder: $pixelToBasepairReference, band: band)
 //                                                                .border(.green)
@@ -1052,12 +1075,14 @@ struct JSONContentUI: View {
                                                                 .onAppear() {
                                                                     // Simple attempt to create columns that can have a name by identifying pockets. Those pockets might not exist or be detected. Better would be clustering of band coordinates, which would require ML
                                                                     if band.intensity == "pocket" {
-                                                                       
+                                                                   
+//                                                                            band.column.name = "Sample " + String(band.column.index)
+                                                                      // Delete
                                                                         if bandColumns.isEmpty {
-                                                                            bandColumns.append(Column(index: 0, name: "Pocket 1" ))
+                                                                            bandColumns.append(Column(index: 0, name: "Sample " + String(band.column.index) ))
                                                                         }
                                                                         else {
-                                                                        bandColumns.append(Column(index: (bandColumns.last!.index+1), name: "Pocket " + String(bandColumns.last!.index+1) ))
+                                                                        bandColumns.append(Column(index: (bandColumns.last!.index+1), name: "Pocket " + String("Sample " + String(band.column.index) )))
                                                                             print(bandColumns.last!.index)
                                                                         }
                                                                         
@@ -1207,8 +1232,8 @@ struct JSONContentUI: View {
         func getGelImageMetaData(fileName: String, image: UIImage, completion: @escaping (GelAnalysisResponse?) -> Void) {
             
             // TODO: Remove hardcoded URL
-            // let url = URL(string: "http://127.0.0.1:1324/api/v1/electrophoresis/imageanalysis")
-            let url = URL(string: "http://167.172.190.93:1324/api/v1/electrophoresis/imageanalysis")
+            let url = URL(string: "http://127.0.0.1:1324/api/v1/electrophoresis/imageanalysis")
+            //let url = URL(string: "http://167.172.190.93:1324/api/v1/electrophoresis/imageanalysis")
             let boundary = UUID().uuidString
             
             let session = URLSession.shared
