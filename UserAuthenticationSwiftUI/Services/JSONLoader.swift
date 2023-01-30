@@ -12,6 +12,10 @@ import Combine
 import Accelerate
 
 
+// Library for image croping. Put into another view later.
+import Mantis
+
+
 // iOS 15 check can be removed since target plattform changed to iOS 15, look for better compatibility later
 
 
@@ -205,6 +209,7 @@ struct BandView: View {
     // Bind to state of parent view, such that making a band a reference ladder and attaching a reference value to it can redraw the values of all the other bands.
     @Binding private var pixelToBasepairReferenceLadder: [PixelToBasePairArray]
     
+    // TODO: Make gelAnalysisResponse editable and pass it around to store data later and replace columnName and pixelToBasepairReferenceLadder
     @State var columnName: String
     
     @State private var isShowingPopover: Bool = false
@@ -680,7 +685,17 @@ struct JSONContentUI: View {
     
     @State private var showingAlertSavedImage = false
     
+    // Title of columns in gel images when identified as pockets
     @State private var bandColumns = [Column]()
+    
+    // Croping images
+    @State var cropRectImage = CGRect(x: 0, y: 0, width: 1, height: 1)
+    @State private var showingCropper = false
+    // TODO: match this to images selected from image library in mediaItems somehow
+    @State private var uiImage: UIImage = UIImage()
+
+    @State private var cropShapeType: Mantis.CropShapeType = .rect
+    @State private var presetFixedRatioType: Mantis.PresetFixedRatioType = .canUseMultiplePresetFixedRatio()
     
     
     // Not used 27. Jan 2023
@@ -989,7 +1004,10 @@ struct JSONContentUI: View {
                         VStack {
                             
                             //                Text("Welcome to SnowSeeker!")
-                            List(mediaItems.items, id: \.id) {item in
+                            List(mediaItems.items.indices, id: \.self) { index in
+                                let item = mediaItems.items[index]
+                               
+                                
                                 if self.gelAnalysisResponse.isEmpty {
                                     // TODO: Better placement or overlay over image
                                         ProgressView("Analyzing Gel Image...")
@@ -997,13 +1015,27 @@ struct JSONContentUI: View {
                                 else if self.pixelToBasepairReference.count < 2 {
                                     Text("Select two bands per double tap as reference and assign a size.")
                                 }
-                                
+                                                                        Button("Crop Image") {
+                                //                                            uiImage = imageViewWithOverlay.snapshot()
+                                                                           // uiImage = item.photo
+                                                                            showingCropper = true
+                                                                        }.fullScreenCover(isPresented: $showingCropper, content: {
+                                                                            ImageCropper(image: $mediaItems.items[index].photo,
+                                                                                         cropShapeType: $cropShapeType,
+                                                                                         presetFixedRatioType: $presetFixedRatioType)
+                                                                                .ignoresSafeArea()
+                                                                        })
+
                                 let imageViewWithOverlay = ZStack(alignment: .topLeading) {
+                                    
                                     if item.mediaType == .photo {
                                         
-                                        let image = item.photo ?? UIImage()
+                                        // TODO: access mediaItems directly
+                                       // var image = item.photo
                                         
-                                        Image(uiImage: item.photo ?? UIImage())
+
+                                        
+                                        Image(uiImage: mediaItems.items[index].photo!)
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
                                         // this overlay section is a dublication as in AsyncImage below, TODO: move out to and consolidate in separate function.
@@ -1013,13 +1045,13 @@ struct JSONContentUI: View {
 //
                                                 // Overlay of gel bands
                                                 GeometryReader { geo in
-                                                    
+                                                   
                                                     // This loop probably just has one item? Yes, but it could load multiple requests, for now gelAnalysisResponse is an array.
                                                     // Loop through all API responses and then draw a box with the size of each band
-                                                    ForEach(api.gelAnalysisResponse, id: \.self) { gelImage in
+                                                    ForEach(self.gelAnalysisResponse, id: \.self) { gelImage in
+                                                       
                                                         
                                                         ForEach(gelImage.bands, id: \.self) { band in
-                                                            
                                                            
                                                             // MARK: Visual highlighting of gel bands and band size text formatting
                                                             //                Rectangle()
@@ -1067,7 +1099,7 @@ struct JSONContentUI: View {
 //                                                                .popover(isPresented: self.$showPopover[0])
                                                             // The divide by 8.4 part are hard coded scale factors to match coordinates from object detection to UI. TODO: Make fit overlay and coordiante transformations universal - 29. Okt 2022 DONE
                                                             
-                                                                .position(x: getResizeAdjustedHorizontalPostition(geo: geo, band: band, imageWidth: image.size.width), y: getResizeAdjustedVerticalPostition(geo: geo, band: band, imageHeight: image.size.height))
+                                                                .position(x: getResizeAdjustedHorizontalPostition(geo: geo, band: band, imageWidth: mediaItems.items[index].photo!.size.width), y: getResizeAdjustedVerticalPostition(geo: geo, band: band, imageHeight: mediaItems.items[index].photo!.size.height))
                                                             // Change band box and text size based on iPhone orientation. Why small number 0.065 to get any effect?.
                                                             // TODO: Check for iPad device and orientation (less shrinking in portrait mode on iPad)
                                                             // TODO: Sometimes the adjustment is only recognized when turning back and forth again
@@ -1104,8 +1136,10 @@ struct JSONContentUI: View {
                                 } // ZStack
                                 imageViewWithOverlay
                                 
-                                
-                                
+//                                MantisView(image: imageViewWithOverlay, cropRect: $cropRectImage)
+//                                MantisCropper(image: imageViewWithOverlay) { image in
+//                                            // Use the cropped image here
+//                                        }
                                 if #available(iOS 16, *) {
                                     // Run code in iOS 15 or later.
                                 //    ShareLink("Export", item: imageViewWithOverlay, preview: SharePreview(Text("Shared image"), image: imageViewWithOverlay))
@@ -1121,6 +1155,20 @@ struct JSONContentUI: View {
                                                 Button("OK", role: .cancel) { }
                                             }
                                 }
+//                                Image(uiImage: uiImage)
+//                                    .resizable()
+//                                    .aspectRatio(contentMode: .fit)
+                                
+//                                Button("Crop Image") {
+//                                    uiImage = imageViewWithOverlay.snapshot()
+//                                   // uiImage = item.photo
+//                                    showingCropper = true
+//                                }.fullScreenCover(isPresented: $showingCropper, content: {
+//                                    ImageCropper(image: $uiImage,
+//                                                 cropShapeType: $cropShapeType,
+//                                                 presetFixedRatioType: $presetFixedRatioType)
+//                                        .ignoresSafeArea()
+//                                })
 
 //                                let renderer = ImageRenderer(content: imageViewWithOverlay)
 //                                if let uiImage = renderer.uiImage {
@@ -1129,14 +1177,13 @@ struct JSONContentUI: View {
 //                                }
 //
                             } // List
+//                            .id(mediaItems.items)
                             .navigationBarItems(leading: Button(action: {}, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")})        .sheet(isPresented: $showImagePicker, content: {
                                 PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
                                     showImagePicker = false
-                                    
                                 }
                             })) // .sheet)
-                            
-                            
+                         
                         } // VStack
                         .navigationBarTitle(Text("Gel Images"))
        
@@ -1156,9 +1203,14 @@ struct JSONContentUI: View {
                 .onReceive(mediaItems.$items) { mitems in
 //               self.imageAdded = true
                     print("Image changed")
+                    //  Workaround to remove gel bands when new analysis is started. TODO: Make proper management of responses
+                    self.gelAnalysisResponse.removeAll()
+                    
                     for item in mitems {
-                        api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage()) { result in
+                        api.getGelImageMetaData(fileName: "file", image: item.photo!) { result in
                             self.gelAnalysisResponse.append(result!) //TODO: Catch error when unwrapping
+                            print("Result")
+                            print(result!)
 //                            (self.gelAnalysisResponse.append(result)) ?? (self.gelAnalysisResponse = [result])
                         }
 
@@ -1378,5 +1430,62 @@ class ImageLoaderForPOSTRequest: ObservableObject {
             }
         }
         task.resume()
+    }
+}
+
+// Crop gel images after selected from library or taken image with camera with Mantis
+
+struct ImageCropper: UIViewControllerRepresentable {
+    @Binding var image: UIImage?
+    @Binding var cropShapeType: Mantis.CropShapeType
+    @Binding var presetFixedRatioType: Mantis.PresetFixedRatioType
+    
+    @Environment(\.presentationMode) var presentationMode
+    
+    class Coordinator: CropViewControllerDelegate {
+        var parent: ImageCropper
+        
+        init(_ parent: ImageCropper) {
+            self.parent = parent
+        }
+        
+        func cropViewControllerDidCrop(_ cropViewController: CropViewController, cropped: UIImage, transformation: Transformation, cropInfo: CropInfo) {
+            parent.image = cropped
+            print("transformation is \(transformation)")
+            parent.presentationMode.wrappedValue.dismiss()
+        }
+        
+        func cropViewControllerDidCancel(_ cropViewController: CropViewController, original: UIImage) {
+            parent.presentationMode.wrappedValue.dismiss()
+        }
+        
+        func cropViewControllerDidFailToCrop(_ cropViewController: CropViewController, original: UIImage) {
+        }
+        
+        func cropViewControllerDidBeginResize(_ cropViewController: CropViewController) {
+        }
+        
+        func cropViewControllerDidEndResize(_ cropViewController: CropViewController, original: UIImage, cropInfo: CropInfo) {
+        }
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    func makeUIViewController(context: Context) -> CropViewController {
+        var config = Mantis.Config()
+        config.cropShapeType = cropShapeType
+        config.presetFixedRatioType = presetFixedRatioType
+        // use image for cropping as passed in Binding
+        // TODO: Remove optional !
+        let cropViewController = Mantis.cropViewController(image: image ?? UIImage(),
+                                                           config: config)
+        cropViewController.delegate = context.coordinator
+        return cropViewController
+    }
+    
+    func updateUIViewController(_ uiViewController: CropViewController, context: Context) {
+        
     }
 }

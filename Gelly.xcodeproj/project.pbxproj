@@ -47,6 +47,7 @@
 		89BB1A7B2965A4C30067E63D /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 89BB1A7A2965A4C30067E63D /* FirebaseFirestore */; };
 		89BB1A7D2965A4C30067E63D /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 89BB1A7C2965A4C30067E63D /* FirebaseFirestoreSwift */; };
 		89C7BF7927FA1D7F0005BF7C /* PhotoPickerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89C7BF7827FA1D7F0005BF7C /* PhotoPickerModel.swift */; };
+		89F8FA2B2985FEE7000EB99B /* Mantis in Frameworks */ = {isa = PBXBuildFile; productRef = 89F8FA2A2985FEE7000EB99B /* Mantis */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -119,6 +120,7 @@
 				89BB1A732965A4C20067E63D /* FirebaseAuth in Frameworks */,
 				89BB1A7B2965A4C30067E63D /* FirebaseFirestore in Frameworks */,
 				89BB1A752965A4C30067E63D /* FirebaseAuthCombine-Community in Frameworks */,
+				89F8FA2B2985FEE7000EB99B /* Mantis in Frameworks */,
 				89BB1A7D2965A4C30067E63D /* FirebaseFirestoreSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -417,6 +419,7 @@
 				89BB1A782965A4C30067E63D /* FirebaseDatabaseSwift */,
 				89BB1A7A2965A4C30067E63D /* FirebaseFirestore */,
 				89BB1A7C2965A4C30067E63D /* FirebaseFirestoreSwift */,
+				89F8FA2A2985FEE7000EB99B /* Mantis */,
 			);
 			productName = UserAuthenticationSwiftUI;
 			productReference = 89AE624C2777D09300BDE362 /* Gelly.app */;
@@ -491,6 +494,7 @@
 			mainGroup = 89AE62432777D09300BDE362;
 			packageReferences = (
 				89BB1A712965A4C20067E63D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				89F8FA292985FEE4000EB99B /* XCRemoteSwiftPackageReference "Mantis" */,
 			);
 			productRefGroup = 89AE624D2777D09300BDE362 /* Products */;
 			projectDirPath = "";
@@ -893,6 +897,14 @@
 				kind = branch;
 			};
 		};
+		89F8FA292985FEE4000EB99B /* XCRemoteSwiftPackageReference "Mantis" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/guoyingtao/Mantis.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -925,6 +937,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 89BB1A712965A4C20067E63D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestoreSwift;
+		};
+		89F8FA2A2985FEE7000EB99B /* Mantis */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 89F8FA292985FEE4000EB99B /* XCRemoteSwiftPackageReference "Mantis" */;
+			productName = Mantis;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
