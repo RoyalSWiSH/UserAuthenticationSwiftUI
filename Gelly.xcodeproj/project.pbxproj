@@ -47,6 +47,7 @@
 		89BB1A7B2965A4C30067E63D /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 89BB1A7A2965A4C30067E63D /* FirebaseFirestore */; };
 		89BB1A7D2965A4C30067E63D /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 89BB1A7C2965A4C30067E63D /* FirebaseFirestoreSwift */; };
 		89C7BF7927FA1D7F0005BF7C /* PhotoPickerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89C7BF7827FA1D7F0005BF7C /* PhotoPickerModel.swift */; };
+		89EE79BF299555C000DCD967 /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89EE79BE299555C000DCD967 /* WebView.swift */; };
 		89F8FA2B2985FEE7000EB99B /* Mantis in Frameworks */ = {isa = PBXBuildFile; productRef = 89F8FA2A2985FEE7000EB99B /* Mantis */; };
 /* End PBXBuildFile section */
 
@@ -108,6 +109,8 @@
 		89AE629827849EC400BDE362 /* RegistrationDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RegistrationDetails.swift; path = UserAuthenticationSwiftUI/ViewComponents/RegistrationDetails.swift; sourceTree = SOURCE_ROOT; };
 		89AE629B27849FA800BDE362 /* RegistrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistrationService.swift; sourceTree = "<group>"; };
 		89C7BF7827FA1D7F0005BF7C /* PhotoPickerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoPickerModel.swift; sourceTree = "<group>"; };
+		89EE79BE299555C000DCD967 /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebView.swift; sourceTree = "<group>"; };
+		89F8FA302988AB86000EB99B /* swift-xid */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "swift-xid"; path = "../swift-xid"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -291,6 +294,8 @@
 		89AE62432777D09300BDE362 = {
 			isa = PBXGroup;
 			children = (
+				89EE79BE299555C000DCD967 /* WebView.swift */,
+				89F8FA2D2988A788000EB99B /* Packages */,
 				89AE624E2777D09300BDE362 /* UserAuthenticationSwiftUI */,
 				89AE62602777D09800BDE362 /* UserAuthenticationSwiftUITests */,
 				89AE626B2777D09800BDE362 /* UserAuthenticationSwiftUIUITests */,
@@ -394,6 +399,14 @@
 				8999E0A3281EB4FC00ABF937 /* JSONLoader.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		89F8FA2D2988A788000EB99B /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				89F8FA302988AB86000EB99B /* swift-xid */,
+			);
+			name = Packages;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -560,6 +573,7 @@
 				8937576027874FF900060581 /* LoginCredentials.swift in Sources */,
 				89AE628C2783DE2D00BDE362 /* RegisterView.swift in Sources */,
 				89AE628227790A9200BDE362 /* PreviewLayoutComponentModifier.swift in Sources */,
+				89EE79BF299555C000DCD967 /* WebView.swift in Sources */,
 				8904917927850595007D1FEE /* RegistrationViewModel.swift in Sources */,
 				89375772278785A100060581 /* ForgotPasswordService.swift in Sources */,
 				89AE62502777D09300BDE362 /* UserAuthenticationSwiftUIApp.swift in Sources */,
@@ -725,6 +739,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2023020902;
 				DEVELOPMENT_ASSET_PATHS = "\"UserAuthenticationSwiftUI/Preview Content\"";
 				DEVELOPMENT_TEAM = 9BX84Q88ES;
 				ENABLE_PREVIEWS = YES;
@@ -734,6 +749,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = bio.gelly.Gelly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -747,6 +763,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2023020902;
 				DEVELOPMENT_ASSET_PATHS = "\"UserAuthenticationSwiftUI/Preview Content\"";
 				DEVELOPMENT_TEAM = 9BX84Q88ES;
 				ENABLE_PREVIEWS = YES;
@@ -756,6 +773,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = bio.gelly.Gelly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;

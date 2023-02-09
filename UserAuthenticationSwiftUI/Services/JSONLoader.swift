@@ -11,6 +11,8 @@ import Combine
 
 import Accelerate
 
+//import xid
+
 
 // Library for image croping. Put into another view later.
 import Mantis
@@ -71,7 +73,8 @@ struct GelAnalysisResponse: Codable, Hashable {
     let meta: Meta
     let gelImage: GelImage
     let experimentalMethod: ExperimentalMethod
-    let ladder: Ladder
+    // Ladder will be changed on the user client
+    var ladder: Ladder
     let detection: Detection
     let columns: [Column]
     let bands: [Band]
@@ -390,7 +393,7 @@ extension GelAnalysisResponse {
         let gelImage: GelImage
         
         let experimentalMethod: ExperimentalMethod
-        let ladder: Ladder
+        var ladder: Ladder
         let detection: Detection
         let columns: [Column]
         let bands: [Band]
@@ -697,6 +700,9 @@ struct JSONContentUI: View {
     @State private var cropShapeType: Mantis.CropShapeType = .rect
     @State private var presetFixedRatioType: Mantis.PresetFixedRatioType = .canUseMultiplePresetFixedRatio()
     
+    // Feedback upvoty or frill for WebView
+    private var feedbackUrl: URL? = URL(string: "https://app.frill.co/embed/widget/4fd962c8-0f6d-4311-99a8-1c04977462dc")
+
     
     // Not used 27. Jan 2023
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
@@ -773,231 +779,13 @@ struct JSONContentUI: View {
     
     
     var body: some View {
-        //        List(results, id: \.id) { item in
-        //            VStack(alignment: .leading) {
-        //                Text(item.title)
-        //                    .font(.headline)
-        //                //Text(item.numberOfBands)
-        //            }
-        //        }
-        //        .task {
-        //            await loadData()
-        //        }
+
         // TODO: Replace with NavigationSplitView, but thats iOS 16 only
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            NavigationView {
-
-                VStack{
-
-                    // TODO: Figure out how to get individual popover at the position of the band on iPad
-                    Button("Analyze") { print("Analyse selected image 4")
-                        for item in mediaItems.items {
-                            api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage()) {result in
-                                
-                            }
-                            print("Analyse selected image")
-                            print(api.gelAnalysisResponse)}}
-//                    .popover(isPresented: $showPopover2) {
-//                        Text("Convert refe rence band at position " + String(linearMappingFromPixelToBasePair(yPositionInPixels: selectedBandItem.yMin, slope: 1.0, yCross: 0.0)) + "px to base pairs").font(.headline).padding()
-//                        // Better way to unwrap .last instead of !?
-//                        TextField("What size does this band have?",  value: $pixelToBasepairReference.last!.basePair, format: .number)
-//                        // Show array of base pair sizes for the reference ladder
-//                        Text("Ladder Px: " + (pixelToBasepairReference.map{element in String(element.yPixel)}.joined(separator: ",")))
-//                        Text("Ladder Bp: " + (pixelToBasepairReference.map{element in String(element.basePair)}.joined(separator: ",")))
-//                    }
-
-
-
-                    //       ZStack{
-                    //
-                    //        AsyncImage(url: self.url, placeholder: {
-                    //            Text("Loading ... 123")
-                    //        })
-                    //        // TODO: Use imageloader from AsyncImage instead of loading the image for the second time
-                    //        .onReceive(imageLoader.didChange) { data in
-                    //                    self.image = UIImage(data: data) ?? UIImage()
-                    //
-                    //                    // Make call to API with the image loaded
-                    //                    // TODO: Make this less ugly
-                    ////                    api.getGelImageMetaData(fileName: "file", image: self.image)
-                    //                 //   print("Image was loaded and send in onReceive")
-                    //        } // onReceive
-                    //        .overlay(
-                    //        // Overlay of gel bands
-                    //            GeometryReader { geo in
-                    //
-                    //            // This loop probably just has one item? Yes, but it could load multiple requests, for now gelAnalysisResponse is an array.
-                    //            // Loop through all API responses and then draw a box with the size of each band
-                    //            ForEach(api.gelAnalysisResponse, id: \.self) { gelImage in
-                    //
-                    //                ForEach(gelImage.bands, id: \.self) { band in
-                    //// MARK: Visual highlighting of gel bands and band size text formatting
-                    ////                Rectangle()
-                    ////                        .stroke(lineWidth: 2)
-                    ////                        .frame(width: 20, height: 10)
-                    ////                        .border(.red)
-                    ////                        .foregroundColor(.blue)
-                    ////                        .position(x: CGFloat(box.xMin)/8.4, y: CGFloat(box.yMin)/4.1)
-                    //
-                    //
-                    //                    // Convert position from pixel into base pairs and round them. Error in a gel 10 bp?
-                    //
-                    //
-                    //                    let yPosition = band.yMin
-                    //
-                    //                    let basePairSize:Double = transformPixelToBasePairs(yPositionInPixels: yPosition, pixelToBasePairReference: pixelToBasepairReference)
-                    //
-                    //
-                    //                    let roundedBasePairSize: Int = Int( round(basePairSize*10)/10 )
-                    //                    Text(String(roundedBasePairSize))
-                    //                        .border(.green)
-                    //                        .foregroundColor(.black)
-                    //                        .font(.system(size: 12, weight: .light, design: .serif))
-                    //                       // .margin(top: 32, bottom: 8, left: 16, right: 16)
-                    //                        .background(Color.gray.opacity(0.6))
-                    //                        .onAppear() {
-                    //                            // initialize popover state
-                    //                            self.showPopover.append(false)
-                    //                        }
-                    //                        .onTapGesture(count: 2) {
-                    //                            print("Double tapped!")
-                    //                            self.showPopover[0] = true
-                    //                            showPopover2 = true
-                    //
-                    //                            selectedBandItem = band
-                    //                            let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
-                    //                            pixelToBasepairReference.append(a)
-                    //                        }
-                    //                        .onLongPressGesture {
-                    //                                print("Long pressed!")
-                    //                        }
-                    ////                        .popover(isPresented:  $showPopover2) {
-                    //////                        .popover(isPresented: self.$showPopover[0]) {
-                    ////                                    Text("Your content here")
-                    ////                                        .font(.headline)
-                    ////                                        .padding()
-                    ////                                }
-                    ////                        .popover(isPresented: self.$showPopover[0])
-                    //                    // The divide by 8.4 part are hard coded scale factors to match coordinates from object detection to UI. TODO: Make fit overlay and coordiante transformations universal - 29. Okt 2022 DONE
-                    //                        .position(x: getResizeAdjustedHorizontalPostition(geo: geo, band: band, imageWidth: self.image.size.width), y: getResizeAdjustedVerticalPostition(geo: geo, band: band, imageHeight: self.image.size.height))
-                    //
-                    //                    } // ForEach
-                    //                  }  // ForEach
-                    //                    }
-                    //                ) // .overlay
-                    //               .scaledToFit()
-                    //
-                    //       }.foregroundColor(.black)
-                    //            .scaledToFit()
-
-                } // VStack
-                .navigationBarItems(leading: Button(action: {}, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")}))
-                .navigationTitle("Gelly")
-
-                //            Button(action: {}, label: {Image(systemName: "trash").foregroundColor(.red)})
-                //            Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")})
-
-                //            VStack {
-                //                Text("Welcome to SnowSeeker!")
-                //            List(mediaItems.items, id: \.id) {item in
-                //                ZStack(alignment: .topLeading) {
-                //                    if item.mediaType == .photo {
-                //
-                //                        let image = item.photo ?? UIImage()
-                //
-                //                        Image(uiImage: item.photo ?? UIImage())
-                //                        .resizable()
-                //                        .aspectRatio(contentMode: .fit)
-                //                        // this overlay section is a dublication as in AsyncImage below, TODO: move out to and consolidate in separate function.
-                //                        .overlay(
-                //                             // Overlay of gel bands
-                //                                GeometryReader { geo in
-                //
-                //                                // This loop probably just has one item? Yes, but it could load multiple requests, for now gelAnalysisResponse is an array.
-                //                                // Loop through all API responses and then draw a box with the size of each band
-                //                                ForEach(api.gelAnalysisResponse, id: \.self) { gelImage in
-                //
-                //                                    ForEach(gelImage.bands, id: \.self) { band in
-                //                    // MARK: Visual highlighting of gel bands and band size text formatting
-                //                    //                Rectangle()
-                //                    //                        .stroke(lineWidth: 2)
-                //                    //                        .frame(width: 20, height: 10)
-                //                    //                        .border(.red)
-                //                    //                        .foregroundColor(.blue)
-                //                    //                        .position(x: CGFloat(box.xMin)/8.4, y: CGFloat(box.yMin)/4.1)
-                //
-                //
-                //                                        // Convert position from pixel into base pairs and round them. Error in a gel 10 bp?
-                //
-                //
-                //                                        let yPosition = band.yMin
-                //
-                //                                        let basePairSize:Double = transformPixelToBasePairs(yPositionInPixels: yPosition, pixelToBasePairReference: pixelToBasepairReference)
-                //
-                //
-                //                                        let roundedBasePairSize: Int = Int( round(basePairSize*10)/10 )
-                //                                        Text(String(roundedBasePairSize))
-                //                                            .border(.green)
-                //                                            .foregroundColor(.black)
-                //                                            .font(.system(size: 12, weight: .light, design: .serif))
-                //                                           // .margin(top: 32, bottom: 8, left: 16, right: 16)
-                //                                            .background(Color.gray.opacity(0.6))
-                //                                            .onAppear() {
-                //                                                // initialize popover state
-                //                                                self.showPopover.append(false)
-                //                                            }
-                //                                            .onTapGesture(count: 2) {
-                //                                                print("Double tapped!")
-                //                                                self.showPopover[0] = true
-                //                                                showPopover2 = true
-                //
-                //                                                selectedBandItem = band
-                //                                                let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
-                //                                                pixelToBasepairReference.append(a)
-                //                                            }
-                //                                            .onLongPressGesture {
-                //                                                    print("Long pressed!")
-                //                                            }
-                //                    //                        .popover(isPresented:  $showPopover2) {
-                //                    ////                        .popover(isPresented: self.$showPopover[0]) {
-                //                    //                                    Text("Your content here")
-                //                    //                                        .font(.headline)
-                //                    //                                        .padding()
-                //                    //                                }
-                //                    //                        .popover(isPresented: self.$showPopover[0])
-                //                                        // The divide by 8.4 part are hard coded scale factors to match coordinates from object detection to UI. TODO: Make fit overlay and coordiante transformations universal - 29. Okt 2022 DONE
-                //                                            .position(x: getResizeAdjustedHorizontalPostition(geo: geo, band: band, imageWidth: image.size.width), y: getResizeAdjustedVerticalPostition(geo: geo, band: band, imageHeight: image.size.height))
-                //
-                //
-                //                                        } // ForEach
-                //                                      }  // ForEach
-                //                                        }
-                //                                    ).scaledToFit()
-                //
-                //                    }
-                //            }.scaledToFit()
-                //            }
-                //        }
-                //           RegisterView()
-            } // NavigationView
-            .navigationViewStyle(StackNavigationViewStyle())
-            .sheet(isPresented: $showImagePicker, content: {
-                PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
-                    showImagePicker = false
- 
-                    print("Analyse selected image 1")
-                    for item in mediaItems.items {
-                        // TODO: Call the function but return something and store it into an object
-                        api.getGelImageMetaData(fileName: "file", image: item.photo ?? UIImage()) {result in
-                            
-                        }
-//                        print("Analyse selected image")
-//                        print(api.gelAnalysisResponse)
-                    }
-                }
-            }) // .sheet
-        } // iPad vs iPhone View
-        else {
+//        if UIDevice.current.userInterfaceIdiom == .pad {
+//            NavigationView {
+//
+//        } // iPad vs iPhone View
+//        else {
             NavigationView{
                 List {
                     NavigationLink {
@@ -1006,6 +794,7 @@ struct JSONContentUI: View {
                             //                Text("Welcome to SnowSeeker!")
                             List(mediaItems.items.indices, id: \.self) { index in
                                 let item = mediaItems.items[index]
+                                
                                
                                 
                                 if self.gelAnalysisResponse.isEmpty {
@@ -1043,15 +832,21 @@ struct JSONContentUI: View {
                                             .overlay(
 //                                                self.gelAnalysisResponse.isEmpty ? ZStack{ProgressView("Analyzing Gel Image...")} : nil
 //
-                                                // Overlay of gel bands
+                                                // Use GeometryReader to adjust for screen resizing of image to correctly position gel bands and recalculate pixel position as identified from server side object detection to screen position
                                                 GeometryReader { geo in
                                                    
                                                     // This loop probably just has one item? Yes, but it could load multiple requests, for now gelAnalysisResponse is an array.
                                                     // Loop through all API responses and then draw a box with the size of each band
-                                                    ForEach(self.gelAnalysisResponse, id: \.self) { gelImage in
-                                                       
-                                                        
-                                                        ForEach(gelImage.bands, id: \.self) { band in
+//                                                    ForEach(self.gelAnalysisResponse, id: \.self) { gelImage in
+                                                    
+                                                    // Check if there are equal number of analysis results as there are images.
+                                                    // For example when an image is selected but before it is send to the server those are not equal and therefore there are no bands to draw
+                                                    if self.gelAnalysisResponse.count == mediaItems.items.count {
+
+                                                        let imageResponse = self.gelAnalysisResponse.first(where: { $0.gelImage.xid == mediaItems.items[index].id } )
+
+//                                                        self.gelAnalysisResponse[index].bands
+                                                        ForEach(imageResponse!.bands, id: \.self) { band in
                                                            
                                                             // MARK: Visual highlighting of gel bands and band size text formatting
                                                             //                Rectangle()
@@ -1123,7 +918,7 @@ struct JSONContentUI: View {
                                                             
                                                             
                                                         } // ForEach
-                                                    }  // ForEach
+                                                    }  // if
                                           
                                                 } // GeometryReader
 //                                            } //else
@@ -1141,8 +936,19 @@ struct JSONContentUI: View {
 //                                            // Use the cropped image here
 //                                        }
                                 if #available(iOS 16, *) {
+                                    // TODO: On a current XCode setup use ShareLink
                                     // Run code in iOS 15 or later.
                                 //    ShareLink("Export", item: imageViewWithOverlay, preview: SharePreview(Text("Shared image"), image: imageViewWithOverlay))
+                                    Button("Save image to library") {
+                                                    let image = imageViewWithOverlay.snapshot()
+
+                                                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                                                    showingAlertSavedImage = true
+                                     }
+                                    .alert("Image saved. To view and share go to image library.", isPresented: $showingAlertSavedImage) {
+                                                Button("OK", role: .cancel) { }
+                                            }
+                                    
                                 } else {
                                     // Fall back to earlier iOS APIs.
                                     Button("Save image to library") {
@@ -1184,6 +990,9 @@ struct JSONContentUI: View {
                                 }
                             })) // .sheet)
                          
+                            if mediaItems.items.isEmpty {
+                                Text("Press + to load a DNA gel image")
+                            }
                         } // VStack
                         .navigationBarTitle(Text("Gel Images"))
        
@@ -1191,13 +1000,23 @@ struct JSONContentUI: View {
                 label: {
                     Label("LabBook", systemImage: "info.circle")
                 } // NavigationLink
-                    
+                    NavigationLink { WebView(url:  self.feedbackUrl!).navigationBarTitle(Text("Feedback"))
+//                            .navigationBarTitleDisplayMode(.inline)
+                            .navigationBarHidden(true)
+                          
+                    }
+                label: {
+
+                    Label("Feedback", systemImage: "ellipsis.bubble")
+
+                  } // NavigationLink
                     NavigationLink { Text("Settings")}
                 label: {
 
                     Label("Settings", systemImage: "gear")
 
-                  } // NavigationLink
+                  }.navigationBarTitleDisplayMode(.inline)
+                       // NavigationLink
                 }
                 // When images are selected, send them for analysis using the API with a POST requst
                 .onReceive(mediaItems.$items) { mitems in
@@ -1207,7 +1026,11 @@ struct JSONContentUI: View {
                     self.gelAnalysisResponse.removeAll()
                     
                     for item in mitems {
-                        api.getGelImageMetaData(fileName: "file", image: item.photo!) { result in
+                   // use UUID given by iOS in struct to make it identifyable as filename
+                        let fileName = item.id + ".jpg"
+                        api.getGelImageMetaData(fileName: fileName, image: item.photo!) { result in
+                            // Set result xid to item.id but could also do this on server
+//                            result?.meta.xid = item.xid
                             self.gelAnalysisResponse.append(result!) //TODO: Catch error when unwrapping
                             print("Result")
                             print(result!)
@@ -1221,7 +1044,7 @@ struct JSONContentUI: View {
 //                 } // List
                 } // NavigationView
 //                .navigationTitle("Gelly")
-            } // else
+//            } // else
 
         } // View
         
@@ -1284,8 +1107,8 @@ struct JSONContentUI: View {
         func getGelImageMetaData(fileName: String, image: UIImage, completion: @escaping (GelAnalysisResponse?) -> Void) {
             
             // TODO: Remove hardcoded URL
-            let url = URL(string: "http://127.0.0.1:1324/api/v1/electrophoresis/imageanalysis")
-            //let url = URL(string: "http://167.172.190.93:1324/api/v1/electrophoresis/imageanalysis")
+//            let url = URL(string: "http://127.0.0.1:1324/api/v1/electrophoresis/imageanalysis")
+            let url = URL(string: "http://167.172.190.93:1324/api/v1/electrophoresis/imageanalysis")
             let boundary = UUID().uuidString
             
             let session = URLSession.shared
@@ -1300,6 +1123,8 @@ struct JSONContentUI: View {
             // Add the image data to the raw http request data
             data.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
             let paramName = "file"
+      
+            // TODO: send xid
             data.append("Content-Disposition: form-data; name=\"\(paramName)\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
             data.append("Content-Type: image/png\r\n\r\n".data(using: .utf8)!)
             data.append(image.pngData()!)
