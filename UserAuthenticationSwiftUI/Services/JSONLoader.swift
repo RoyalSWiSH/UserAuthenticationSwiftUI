@@ -190,6 +190,7 @@ struct Band: Codable, Hashable {
     let xMax: Int
     let yMax: Int
     
+    
     enum CodingKeys: String, CodingKey {
         case column = "column"
         case bpSize = "bpSize"
@@ -202,6 +203,7 @@ struct Band: Codable, Hashable {
         case yMin = "yMin"
         case xMax = "xMax"
         case yMax = "yMax"
+
     }
 }
 
@@ -219,29 +221,32 @@ struct BandView: View {
     // TODO: Remove default value
     @State var roundedBasePairSize: Int = 0
     
+    // Toggel switch to turn a band into a reference band used as DNA ladder
+    @State var isReferenceBand: Bool = false
+    
     var fontSize: Int = 14
     
     init(pixelToBasepairReferenceLadder: Binding<[PixelToBasePairArray]>, band: Band ) {
         // initialize all variables first
         self.roundedBasePairSize = band.bpSize
         self._pixelToBasepairReferenceLadder = pixelToBasepairReferenceLadder
-      
+        
         self.roundedBasePairSize = 0
         self.band = band
-//        self.bandName = ""
+        //        self.bandName = ""
         
         if band.intensity == "pocket" {
-        self.columnName = "Sample " + String(band.column.index)
+            self.columnName = "Sample " + String(band.column.index)
         }
         else {
             self.columnName = ""
         }
         // Note: Can't modify state variable in init.
-
+        
         print(self._pixelToBasepairReferenceLadder)
-
+        
     }
-
+    
     // TODO: Write test
     func transformPixelToBasePairs(yPositionInPixels: Int, pixelToBasePairReference: [PixelToBasePairArray]) -> Int {
         
@@ -251,7 +256,7 @@ struct BandView: View {
             let upperBand = pixelToBasePairReference.max { a, b in a.yPixel < b.yPixel }
             // Get the last band in the ladder on the lower image side with a smaller DNA fragment size. x1
             let lowerBand = pixelToBasePairReference.min { a, b in a.yPixel < b.yPixel }
-                 
+            
             let lin_max_basePair = log(Float(upperBand!.basePair))
             let lin_min_basePair = log(Float(lowerBand!.basePair))
             
@@ -264,7 +269,7 @@ struct BandView: View {
             
         }
         else {
-            return Int(yPositionInPixels)
+            return Int(0)
         }
     }
     
@@ -302,18 +307,18 @@ struct BandView: View {
         
         
         VStack {
-//            if UIScreen.main.bounds.size.width < 100 {
-//                fontSize = 10
-//            } else {
-//                fontSize = 14
-//            }
+            //            if UIScreen.main.bounds.size.width < 100 {
+            //                fontSize = 10
+            //            } else {
+            //                fontSize = 14
+            //            }
             
             Text((band.intensity == "pocket" || pixelToBasepairReferenceLadder.count < 2) ? columnName  : String(transformPixelToBasePairs(yPositionInPixels: ((band.yMin+band.yMax)/2), pixelToBasePairReference: pixelToBasepairReferenceLadder)) )
-//            Text(band.column.name)
-//                .border(.green)
+            //            Text(band.column.name)
+            //                .border(.green)
                 .foregroundColor(.black)
                 .font(.system(size: 14, weight: .light, design: .default))
-//                .minimumScaleFactor(0.01)
+            //                .minimumScaleFactor(0.01)
                 .padding(CGFloat(3))
                 .minimumScaleFactor(0.3)
             
@@ -326,14 +331,14 @@ struct BandView: View {
             
             
             
-//                selectedBandItem = band
-//                let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
-//                pixelToBasepairReference.append(a)
+            //                selectedBandItem = band
+            //                let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
+            //                pixelToBasepairReference.append(a)
         }
         .popover(isPresented: $isShowingPopover) {
-           
-
-
+            
+            
+            
             if band.intensity == "pocket" {
                 Text("Edit column name").font(.headline).padding()
                 TextField("What name does the column have?",  text: $columnName)
@@ -341,23 +346,41 @@ struct BandView: View {
             else {
                 let bandSize = transformPixelToBasePairs(yPositionInPixels: ((band.yMin+band.yMax)/2), pixelToBasePairReference: pixelToBasepairReferenceLadder)
                 let bandError = calcBandError(bandSize: bandSize)
-
-                Text("Band has a size of \(bandSize) +- \(bandError) bp (25 %)").font(.headline).padding()
-                Text("Band is at position " + String((band.yMin+band.yMax)/2) + " px")
-    //                // Better way to unwrap .last instead of !?
-    //                TextField("What size does this band have?",  value: $pixelToBasepairReferenceLadder.last!.basePair, format: .number)
-               
-                TextField("What size does this band have?",  value: $band.bpSize, format: .number)
-                Button("Mark as reference band") {
-                    self.pixelToBasepairReferenceLadder.append(PixelToBasePairArray(yPixel:( (band.yMin+band.yMax)/2), basePair: band.bpSize))
+                
+                Text("Fragment Size: \(bandSize) +- \(bandError) bp (25 %)").font(.headline).padding()
+//                Text("Band is at position " + String((band.yMin+band.yMax)/2) + " px")
+                //                // Better way to unwrap .last instead of !?
+                //                TextField("What size does this band have?",  value: $pixelToBasepairReferenceLadder.last!.basePair, format: .number)
+                
+//                if band.xid pixelToBasepairReferenceLadder.bandXid
+//                    if pixelToBasepairReferenceLadder.contains(where: {$0.bandXid == band.xid}) {
+                HStack{
+                    Text("Reference Ladder")
+                    Toggle("Reference Band", isOn: $isReferenceBand).labelsHidden()
                 }
+                    if isReferenceBand {
+                    TextField("What size does this band have?",  value: $band.bpSize, format: .number)
+                        Button("Add Band to Ladder") {
+                            self.pixelToBasepairReferenceLadder.append(PixelToBasePairArray(yPixel:( (band.yMin+band.yMax)/2), basePair: band.bpSize, bandXid: band.xid))
+                           
+                        }
+                        // Show array of base pair sizes for the reference ladder
+                        Text("Ladder Px: " + (pixelToBasepairReferenceLadder.map{element in String(element.yPixel)}.joined(separator: ",")))
+                        Text("Ladder Bp: " + (pixelToBasepairReferenceLadder.map{element in String(element.basePair)}.joined(separator: ",")))
+                        //                let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
+                    }
+          
+//                    .onChange(of: band.bpSize) { bpSize in
+//                                    print(bpSize)
+//                        self.pixelToBasepairReferenceLadder
+//                                }
+                
+               
+              
             }
             
-            // Show array of base pair sizes for the reference ladder
-            Text("Ladder Px: " + (pixelToBasepairReferenceLadder.map{element in String(element.yPixel)}.joined(separator: ",")))
-            Text("Ladder Bp: " + (pixelToBasepairReferenceLadder.map{element in String(element.basePair)}.joined(separator: ",")))
-//                let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
-           
+          
+            
             
             if UIDevice.current.userInterfaceIdiom == .phone {
                 Button("Close popup") {
@@ -365,7 +388,7 @@ struct BandView: View {
                     self.isShowingPopover = false
                 } // Button
             } // Check UIDevice
-//                } // popover
+            //                } // popover
             //pixelToBasepairReferenceLadder.append(a)
         } // popover
         
@@ -650,6 +673,7 @@ struct BoxCoord: Codable, Hashable {
 struct PixelToBasePairArray: Codable, Hashable {
     var yPixel: Int
     var basePair: Int
+    var bandXid: String
 }
 
 enum FittingError: Error {
@@ -696,13 +720,13 @@ struct JSONContentUI: View {
     @State private var showingCropper = false
     // TODO: match this to images selected from image library in mediaItems somehow
     @State private var uiImage: UIImage = UIImage()
-
+    
     @State private var cropShapeType: Mantis.CropShapeType = .rect
     @State private var presetFixedRatioType: Mantis.PresetFixedRatioType = .canUseMultiplePresetFixedRatio()
     
     // Feedback upvoty or frill for WebView
     private var feedbackUrl: URL? = URL(string: "https://app.frill.co/embed/widget/4fd962c8-0f6d-4311-99a8-1c04977462dc")
-
+    
     
     // Not used 27. Jan 2023
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
@@ -740,452 +764,353 @@ struct JSONContentUI: View {
         return paths[0]
     }
     
-//    func transformPixelToBasePairs(yPositionInPixels: Int, pixelToBasePairReference: [PixelToBasePairArray]) -> Double {
-//
-//        if pixelToBasePairReference.count > 1 {
-//
-//            let max_y = pixelToBasePairReference.map { $0.yPixel }.max()
-//            let min_y = pixelToBasePairReference.map { $0.yPixel }.min()
-//
-//            let delta_y = Double(max_y! - min_y!)
-//
-//            // TOOD: Get Index of max value
-//
-//            let max_basePair = pixelToBasePairReference.map { $0.basePair }.max()
-//            let min_basePair = pixelToBasePairReference.map { $0.basePair }.min()
-//
-//            let delta_basePair = Double(max_basePair! - min_basePair!)
-//
-//            let slope = delta_basePair/delta_y
-//
-//            return linearMappingFromPixelToBasePair(yPositionInPixels:
-//                                                        yPositionInPixels, slope: slope, yCross: 0)
-//        }
-//        else {
-//            return Double(yPositionInPixels)
-//        }
-//    }
-//
-//    func linearMappingFromPixelToBasePair(yPositionInPixels: Int, slope: Double, yCross: Double) -> Double {
-//        // Linear mapping of pixels to base pairs. This is a very simplistic way to calculate this. Better linear regression, which requires CreateML and an M1 Chip.
-//        // yPositionInPixels: Position of the band on the image in pixels
-//        // slope: Gradient to transform pixels into basepairs
-//        // yCross: Crossing of slope with y-axis
-//        return Double(Double(yPositionInPixels)*slope+yCross)
-//    }
+    //    func transformPixelToBasePairs(yPositionInPixels: Int, pixelToBasePairReference: [PixelToBasePairArray]) -> Double {
+    //
+    //        if pixelToBasePairReference.count > 1 {
+    //
+    //            let max_y = pixelToBasePairReference.map { $0.yPixel }.max()
+    //            let min_y = pixelToBasePairReference.map { $0.yPixel }.min()
+    //
+    //            let delta_y = Double(max_y! - min_y!)
+    //
+    //            // TOOD: Get Index of max value
+    //
+    //            let max_basePair = pixelToBasePairReference.map { $0.basePair }.max()
+    //            let min_basePair = pixelToBasePairReference.map { $0.basePair }.min()
+    //
+    //            let delta_basePair = Double(max_basePair! - min_basePair!)
+    //
+    //            let slope = delta_basePair/delta_y
+    //
+    //            return linearMappingFromPixelToBasePair(yPositionInPixels:
+    //                                                        yPositionInPixels, slope: slope, yCross: 0)
+    //        }
+    //        else {
+    //            return Double(yPositionInPixels)
+    //        }
+    //    }
+    //
+    //    func linearMappingFromPixelToBasePair(yPositionInPixels: Int, slope: Double, yCross: Double) -> Double {
+    //        // Linear mapping of pixels to base pairs. This is a very simplistic way to calculate this. Better linear regression, which requires CreateML and an M1 Chip.
+    //        // yPositionInPixels: Position of the band on the image in pixels
+    //        // slope: Gradient to transform pixels into basepairs
+    //        // yCross: Crossing of slope with y-axis
+    //        return Double(Double(yPositionInPixels)*slope+yCross)
+    //    }
     
     
-//    @available(iOS 15.0, *)
+    //    @available(iOS 15.0, *)
     
     
     var body: some View {
-
+        
         // TODO: Replace with NavigationSplitView, but thats iOS 16 only
-//        if UIDevice.current.userInterfaceIdiom == .pad {
-//            NavigationView {
-//
-//        } // iPad vs iPhone View
-//        else {
-            NavigationView{
-                List {
-                    NavigationLink {
-                        VStack {
+        //        if UIDevice.current.userInterfaceIdiom == .pad {
+        //            NavigationView {
+        //
+        //        } // iPad vs iPhone View
+        //        else {
+        NavigationView{
+            List {
+                NavigationLink {
+                    VStack {
+                        
+                        //                Text("Welcome to SnowSeeker!")
+                        List(mediaItems.items.indices, id: \.self) { index in
+                            let item = mediaItems.items[index]
                             
-                            //                Text("Welcome to SnowSeeker!")
-                            List(mediaItems.items.indices, id: \.self) { index in
-                                let item = mediaItems.items[index]
+                                   
+                            let imageViewWithOverlay = ZStack(alignment: .topLeading) {
                                 
-                               
-                                
+                                if item.mediaType == .photo {
+                                    
+                                    // TODO: access mediaItems directly
+                                    // var image = item.photo
+                                    
+                                    
+                                    
+                                    Image(uiImage: mediaItems.items[index].photo!)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                    // this overlay section is a dublication as in AsyncImage below, TODO: move out to and consolidate in separate function.
+                                    
+                                        .overlay(
+                                            //                                                self.gelAnalysisResponse.isEmpty ? ZStack{ProgressView("Analyzing Gel Image...")} : nil
+                                            //
+                                            // Use GeometryReader to adjust for screen resizing of image to correctly position gel bands and recalculate pixel position as identified from server side object detection to screen position
+                                            GeometryReader { geo in
+                                                
+                                                // This loop probably just has one item? Yes, but it could load multiple requests, for now gelAnalysisResponse is an array.
+                                                // Loop through all API responses and then draw a box with the size of each band
+                                                //                                                    ForEach(self.gelAnalysisResponse, id: \.self) { gelImage in
+                                                
+                                                // Check if there are equal number of analysis results as there are images.
+                                                // For example when an image is selected but before it is send to the server those are not equal and therefore there are no bands to draw
+                                                if self.gelAnalysisResponse.count == mediaItems.items.count {
+                                                    
+                                                    let imageResponse = self.gelAnalysisResponse.first(where: { $0.gelImage.xid == mediaItems.items[index].id } )
+                                                    
+                                                    //                                                        self.gelAnalysisResponse[index].bands
+                                                    ForEach(imageResponse!.bands, id: \.self) { band in
+                                                        
+                                                        // MARK: Visual highlighting of gel bands and band size text formatting
+                                                        //
+                                                        
+                                                        
+                                                        BandView(pixelToBasepairReferenceLadder: $pixelToBasepairReference, band: band)
+                                                        
+                                                        // The divide by 8.4 part are hard coded scale factors to match coordinates from object detection to UI. TODO: Make fit overlay and coordiante transformations universal - 29. Okt 2022 DONE
+                                                        
+                                                            .position(x: getResizeAdjustedHorizontalPostition(geo: geo, band: band, imageWidth: mediaItems.items[index].photo!.size.width), y: getResizeAdjustedVerticalPostition(geo: geo, band: band, imageHeight: mediaItems.items[index].photo!.size.height))
+                                                        // Change band box and text size based on iPhone orientation. Why small number 0.065 to get any effect?.
+                                                        // TODO: Check for iPad device and orientation (less shrinking in portrait mode on iPad)
+                                                        // TODO: Sometimes the adjustment is only recognized when turning back and forth again
+                                                            .frame(width: geo.size.width * (UIDevice.current.orientation.isPortrait ? 0.07 : 1.6), height: geo.size.height * (UIDevice.current.orientation.isPortrait ? 0.07 : 1.2))
+                                                            .onAppear() {
+                                                                // Simple attempt to create columns that can have a name by identifying pockets. Those pockets might not exist or be detected. Better would be clustering of band coordinates, which would require ML
+                                                                if band.intensity == "pocket" {
+                                                                    
+                                                                    //                                                                            band.column.name = "Sample " + String(band.column.index)
+                                                                    // Delete
+                                                                    if bandColumns.isEmpty {
+                                                                        bandColumns.append(Column(index: 0, name: "Sample " + String(band.column.index) ))
+                                                                    }
+                                                                    else {
+                                                                        bandColumns.append(Column(index: (bandColumns.last!.index+1), name: "Pocket " + String("Sample " + String(band.column.index) )))
+                                                                        print(bandColumns.last!.index)
+                                                                    }
+                                                                    
+                                                                }
+                                                            }
+                                                        
+                                                        
+                                                    } // ForEach
+                                                }  // if
+                                                
+                                            } // GeometryReader
+                                            //                                            } //else
+                                        ) // overlay
+                                        .onTapGesture(count: 2) {
+                                            
+                                        }
+                                    
+                                } // item.mediaType == .photo
+                            } // ZStack
+                            
+                            HStack{
+                                // Some status messages for the user
                                 if self.gelAnalysisResponse.isEmpty {
                                     // TODO: Better placement or overlay over image
-                                        ProgressView("Analyzing Gel Image...")
+                              
+                                    ProgressView("Analyzing Gel Image...")
                                 }
                                 else if self.pixelToBasepairReference.count < 2 {
+                                    Image(systemName: "info.circle")
                                     Text("Select two bands per double tap as reference and assign a size.")
                                 }
-                                                                        Button("Crop Image") {
-                                //                                            uiImage = imageViewWithOverlay.snapshot()
-                                                                           // uiImage = item.photo
-                                                                            showingCropper = true
-                                                                        }.fullScreenCover(isPresented: $showingCropper, content: {
-                                                                            ImageCropper(image: $mediaItems.items[index].photo,
-                                                                                         cropShapeType: $cropShapeType,
-                                                                                         presetFixedRatioType: $presetFixedRatioType)
-                                                                                .ignoresSafeArea()
-                                                                        })
-
-                                let imageViewWithOverlay = ZStack(alignment: .topLeading) {
-                                    
-                                    if item.mediaType == .photo {
-                                        
-                                        // TODO: access mediaItems directly
-                                       // var image = item.photo
-                                        
-
-                                        
-                                        Image(uiImage: mediaItems.items[index].photo!)
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                        // this overlay section is a dublication as in AsyncImage below, TODO: move out to and consolidate in separate function.
-                                        
-                                            .overlay(
-//                                                self.gelAnalysisResponse.isEmpty ? ZStack{ProgressView("Analyzing Gel Image...")} : nil
-//
-                                                // Use GeometryReader to adjust for screen resizing of image to correctly position gel bands and recalculate pixel position as identified from server side object detection to screen position
-                                                GeometryReader { geo in
-                                                   
-                                                    // This loop probably just has one item? Yes, but it could load multiple requests, for now gelAnalysisResponse is an array.
-                                                    // Loop through all API responses and then draw a box with the size of each band
-//                                                    ForEach(self.gelAnalysisResponse, id: \.self) { gelImage in
-                                                    
-                                                    // Check if there are equal number of analysis results as there are images.
-                                                    // For example when an image is selected but before it is send to the server those are not equal and therefore there are no bands to draw
-                                                    if self.gelAnalysisResponse.count == mediaItems.items.count {
-
-                                                        let imageResponse = self.gelAnalysisResponse.first(where: { $0.gelImage.xid == mediaItems.items[index].id } )
-
-//                                                        self.gelAnalysisResponse[index].bands
-                                                        ForEach(imageResponse!.bands, id: \.self) { band in
-                                                           
-                                                            // MARK: Visual highlighting of gel bands and band size text formatting
-                                                            //                Rectangle()
-                                                            //                        .stroke(lineWidth: 2)
-                                                            //                        .frame(width: 20, height: 10)
-                                                            //                        .border(.red)
-                                                            //                        .foregroundColor(.blue)
-                                                            //                        .position(x: CGFloat(box.xMin)/8.4, y: CGFloat(box.yMin)/4.1)
-                                                            
-                                                            
-                                                            // Convert position from pixel into base pairs and round them. Error in a gel 10 bp?
-//
-//
-//                                                            let yPosition = band.yMin
-//
-//                                                            let basePairSize:Double = transformPixelToBasePairs(yPositionInPixels: yPosition, pixelToBasePairReference: pixelToBasepairReference)
-//
-                                                            
-//                                                            let roundedBasePairSize: Int = Int( round(basePairSize*10)/10 )
-//                                                            Text(String(roundedBasePairSize))
-                                                           
-                                                            
-                                                            BandView(pixelToBasepairReferenceLadder: $pixelToBasepairReference, band: band)
-//                                                                .border(.green)
-//                                                                .foregroundColor(.black)
-//                                                                .font(.system(size: 12, weight: .light, design: .serif))
-//                                                            // .margin(top: 32, bottom: 8, left: 16, right: 16)
-//                                                                .background(Color.gray.opacity(0.6))
-//                                                                .onAppear() {
-//                                                                    // initialize popover state
-//                                                                    self.showPopover.append(false)
-//                                                                }
-//                                                                .onTapGesture(count: 2) {
-//                                                                    print("Double tapped!")
-//                                                                    self.showPopover[0] = true
-//                                                                    showPopover2 = true
-//
-//                                                                    selectedBandItem = band
-//                                                                    let a: PixelToBasePairArray = PixelToBasePairArray(yPixel: band.yMin, basePair: roundedBasePairSize)
-//                                                                    pixelToBasepairReference.append(a)
-//                                                                }
-//                                                                .onLongPressGesture {
-//                                                                    print("Long pressed!")
-//                                                                }
-//                                                                .popover(isPresented: self.$showPopover[0])
-                                                            // The divide by 8.4 part are hard coded scale factors to match coordinates from object detection to UI. TODO: Make fit overlay and coordiante transformations universal - 29. Okt 2022 DONE
-                                                            
-                                                                .position(x: getResizeAdjustedHorizontalPostition(geo: geo, band: band, imageWidth: mediaItems.items[index].photo!.size.width), y: getResizeAdjustedVerticalPostition(geo: geo, band: band, imageHeight: mediaItems.items[index].photo!.size.height))
-                                                            // Change band box and text size based on iPhone orientation. Why small number 0.065 to get any effect?.
-                                                            // TODO: Check for iPad device and orientation (less shrinking in portrait mode on iPad)
-                                                            // TODO: Sometimes the adjustment is only recognized when turning back and forth again
-                                                                .frame(width: geo.size.width * (UIDevice.current.orientation.isPortrait ? 0.07 : 1.6), height: geo.size.height * (UIDevice.current.orientation.isPortrait ? 0.07 : 1.2))
-                                                                .onAppear() {
-                                                                    // Simple attempt to create columns that can have a name by identifying pockets. Those pockets might not exist or be detected. Better would be clustering of band coordinates, which would require ML
-                                                                    if band.intensity == "pocket" {
-                                                                   
-//                                                                            band.column.name = "Sample " + String(band.column.index)
-                                                                      // Delete
-                                                                        if bandColumns.isEmpty {
-                                                                            bandColumns.append(Column(index: 0, name: "Sample " + String(band.column.index) ))
-                                                                        }
-                                                                        else {
-                                                                        bandColumns.append(Column(index: (bandColumns.last!.index+1), name: "Pocket " + String("Sample " + String(band.column.index) )))
-                                                                            print(bandColumns.last!.index)
-                                                                        }
-                                                                        
-                                                                    }
-                                                                }
-                                                            
-                                                            
-                                                        } // ForEach
-                                                    }  // if
-                                          
-                                                } // GeometryReader
-//                                            } //else
-                                            ) // overlay
-                                            .onTapGesture(count: 2) {
-                                                
-                                            }
-                                        
-                                    } // item.mediaType == .photo
-                                } // ZStack
-                                imageViewWithOverlay
-                                
-//                                MantisView(image: imageViewWithOverlay, cropRect: $cropRectImage)
-//                                MantisCropper(image: imageViewWithOverlay) { image in
-//                                            // Use the cropped image here
-//                                        }
-                                if #available(iOS 16, *) {
-                                    // TODO: On a current XCode setup use ShareLink
-                                    // Run code in iOS 15 or later.
-                                //    ShareLink("Export", item: imageViewWithOverlay, preview: SharePreview(Text("Shared image"), image: imageViewWithOverlay))
-                                    Button("Save image to library") {
-                                                    let image = imageViewWithOverlay.snapshot()
-
-                                                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
-                                                    showingAlertSavedImage = true
-                                     }
-                                    .alert("Image saved. To view and share go to image library.", isPresented: $showingAlertSavedImage) {
-                                                Button("OK", role: .cancel) { }
-                                            }
-                                    
-                                } else {
-                                    // Fall back to earlier iOS APIs.
-                                    Button("Save image to library") {
-                                                    let image = imageViewWithOverlay.snapshot()
-
-                                                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
-                                                    showingAlertSavedImage = true
-                                     }
-                                    .alert("Image saved. To view and share go to image library.", isPresented: $showingAlertSavedImage) {
-                                                Button("OK", role: .cancel) { }
-                                            }
+                                else {
+                                    Image(systemName: "info.circle")
+                                    Text("Data is not saved in this beta version. Save images to library.")
                                 }
-//                                Image(uiImage: uiImage)
-//                                    .resizable()
-//                                    .aspectRatio(contentMode: .fit)
                                 
-//                                Button("Crop Image") {
-//                                    uiImage = imageViewWithOverlay.snapshot()
-//                                   // uiImage = item.photo
-//                                    showingCropper = true
-//                                }.fullScreenCover(isPresented: $showingCropper, content: {
-//                                    ImageCropper(image: $uiImage,
-//                                                 cropShapeType: $cropShapeType,
-//                                                 presetFixedRatioType: $presetFixedRatioType)
-//                                        .ignoresSafeArea()
-//                                })
-
-//                                let renderer = ImageRenderer(content: imageViewWithOverlay)
-//                                if let uiImage = renderer.uiImage {
-//                                    // use the rendered image somehow
-//                                    ShareLink("Export", item: renderedImage, preview: SharePreview(Text("Shared image"), image: renderedImage))
+                            Spacer()
+                            // MARK: Save and Crop
+                            Button {
+                                //                                            uiImage = imageViewWithOverlay.snapshot()
+                                // uiImage = item.photo
+                                showingCropper = true
+                            }label: {
+                                Label("Crop", systemImage: "crop")
+                            }.buttonStyle(BorderlessButtonStyle()) // Workaround to avoid Save and Crop action overlay each other https://stackoverflow.com/questions/58514891/two-buttons-inside-hstack-taking-action-of-each-other
+                            .fullScreenCover(isPresented: $showingCropper, content: {
+                                ImageCropper(image: $mediaItems.items[index].photo,
+                                             cropShapeType: $cropShapeType,
+                                             presetFixedRatioType: $presetFixedRatioType)
+                                    .ignoresSafeArea()
+                            })
+                            
+//
+//                            if #available(iOS 16, *) {
+//                                // TODO: On a current XCode setup use ShareLink
+//                                // Run code in iOS 15 or later.
+//                                //    ShareLink("Export", item: imageViewWithOverlay, preview: SharePreview(Text("Shared image"), image: imageViewWithOverlay))
+//                                Button {
+//                                    let image = imageViewWithOverlay.snapshot()
+//
+//                                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+//                                    showingAlertSavedImage = true
+//                                } label: {
+//                                    Label("Save", systemImage: "square.and.arrow.down")
+//                                }
+//                                .alert("Image saved. To view and share go to image library.", isPresented: $showingAlertSavedImage) {
+//                                    Button("OK", role: .cancel) { }
 //                                }
 //
-                            } // List
-//                            .id(mediaItems.items)
-                            .navigationBarItems(leading: Button(action: {}, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")})        .sheet(isPresented: $showImagePicker, content: {
-                                PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
-                                    showImagePicker = false
+//                            } else {
+                                // Fall back to earlier iOS APIs.
+                                Button {
+                                    let image = imageViewWithOverlay.snapshot()
+                                    
+                                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                                    showingAlertSavedImage = true
+                                } label: {
+                                    Label("Save", systemImage: "square.and.arrow.down")
+                                }.buttonStyle(BorderlessButtonStyle())
+                                .alert("Image saved. To view and share go to image library.", isPresented: $showingAlertSavedImage) {
+                                    Button("OK", role: .cancel) { }
                                 }
-                            })) // .sheet)
-                         
-                            if mediaItems.items.isEmpty {
-                                Text("Press + to load a DNA gel image")
+//                            }
                             }
-                        } // VStack
-                        .navigationBarTitle(Text("Gel Images"))
-       
-                    } // NavigationLink
-                label: {
-                    Label("LabBook", systemImage: "info.circle")
+//                            ZStack {
+                            imageViewWithOverlay
+                            
+                                
+//                            }
+                  
+                            //
+                        } // List
+                        
+                        .navigationBarItems(leading: Button(action: {}, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")})        .sheet(isPresented: $showImagePicker, content: {
+                            PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
+                                showImagePicker = false
+                            }
+                        })) // .sheet)
+                        
+                        if mediaItems.items.isEmpty {
+                            Text("Press + to load a DNA gel image")
+                        }
+                    } // VStack
+                    .navigationBarTitle(Text("Gel Images"))
+                    
                 } // NavigationLink
-                    NavigationLink { WebView(url:  self.feedbackUrl!).navigationBarTitle(Text("Feedback"))
-//                            .navigationBarTitleDisplayMode(.inline)
-                            .navigationBarHidden(true)
-                          
-                    }
-                label: {
-
-                    Label("Feedback", systemImage: "ellipsis.bubble")
-
-                  } // NavigationLink
-                    NavigationLink { Text("Settings")}
-                label: {
-
-                    Label("Settings", systemImage: "gear")
-
-                  }.navigationBarTitleDisplayMode(.inline)
-                       // NavigationLink
-                }
-                // When images are selected, send them for analysis using the API with a POST requst
-                .onReceive(mediaItems.$items) { mitems in
-//               self.imageAdded = true
-                    print("Image changed")
-                    //  Workaround to remove gel bands when new analysis is started. TODO: Make proper management of responses
-                    self.gelAnalysisResponse.removeAll()
+            label: {
+                Label("Notebook", systemImage: "pencil")
+            } // NavigationLink
+                NavigationLink { WebView(url:  self.feedbackUrl!).navigationBarTitle(Text("Feedback"))
+                    //                            .navigationBarTitleDisplayMode(.inline)
+                        .navigationBarHidden(true)
                     
-                    for item in mitems {
-                   // use UUID given by iOS in struct to make it identifyable as filename
-                        let fileName = item.id + ".jpg"
-                        api.getGelImageMetaData(fileName: fileName, image: item.photo!) { result in
-                            // Set result xid to item.id but could also do this on server
-//                            result?.meta.xid = item.xid
-                            self.gelAnalysisResponse.append(result!) //TODO: Catch error when unwrapping
-                            print("Result")
-                            print(result!)
-//                            (self.gelAnalysisResponse.append(result)) ?? (self.gelAnalysisResponse = [result])
-                        }
-
-                        print("Analyse selected image")
-                        print(api.gelAnalysisResponse)
-                    }
-                   } // .onReceive
-//                 } // List
-                } // NavigationView
-//                .navigationTitle("Gelly")
-//            } // else
-
-        } // View
-        
-        
-        // TODO: This was a test to load data with async. Remove.
-        //    func callAPI() {
-        //        guard let url = URL(string: "https://www.google.de") else { return }
-        //
-        //        let task = URLSession.shared.dataTask(with: url) { data, response, error in
-        //            if let data = data, let string = String(data: data, encoding: .utf8) {
-        //                print(string)
-        //
-        //            }
-        //        }
-        //        task.resume()
-        //    }
-        //
-        
-        //    @available(iOS 15.0, *)
-        // TODO: This was a test to load data with async. Remove.
-        //    func loadData() async {
-        //        guard let url = URL(string: "https://google.de") else {
-        //            print("Invalid URL")
-        //            return }
-        //        do {
-        //            // This line requires iOS 15, so changed min iOS to 15, change later for backward compatibility
-        //        let (data, _) = try await URLSession.shared.data(from: url)
-        //
-        //        if let decodedResponse = try? JSONDecoder().decode(Response.self, from: data) {
-        //            // Check Array
-        //            let results = [decodedResponse.results]
-        //            print("LoadData()")
-        //            print(results)
-        //        } // try
-        //        } catch {
-        //            print("invalid data")
-        //        } // catch
-        //    } // loadData
-    } // struct
-    
-    
-    // Why Observable Object? Call this ViewModel?
-    // TODO: Rename Api to something more useful
-    class Api: ObservableObject {
-        // To automatically update the view when model changes, initiate a published empty array of users
-        // @Published var users: [user] = []
-        
-        //@Published var gelImageMetaData: [GelImageMetaData] = []
-        
-        // Array where multiple responses can be loaded into
-        @Published var gelAnalysisResponse: [GelAnalysisResponse] = []
-        
-        // @Published var column: [Column] = []
-        
-        // @State var image:UIImage = UIImage()
-        
-        // Take an UIImage, form a POST request and send it to analysis to obtain positions of bands and appends it to gelAnalysisResponse
-        // Why not return response instead of appending to @Published state object?
-        // Take a function that is executed when fetching data is completed and assigns the result to gelAnalysisResponse in view JSONContentUI
-        func getGelImageMetaData(fileName: String, image: UIImage, completion: @escaping (GelAnalysisResponse?) -> Void) {
-            
-            // TODO: Remove hardcoded URL
-//            let url = URL(string: "http://127.0.0.1:1324/api/v1/electrophoresis/imageanalysis")
-            let url = URL(string: "http://167.172.190.93:1324/api/v1/electrophoresis/imageanalysis")
-            let boundary = UUID().uuidString
-            
-            let session = URLSession.shared
-            
-            var urlRequest = URLRequest(url: url!)
-            urlRequest.httpMethod = "POST"
-            
-            urlRequest.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-            
-            var data = Data()
-            
-            // Add the image data to the raw http request data
-            data.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
-            let paramName = "file"
-      
-            // TODO: send xid
-            data.append("Content-Disposition: form-data; name=\"\(paramName)\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
-            data.append("Content-Type: image/png\r\n\r\n".data(using: .utf8)!)
-            data.append(image.pngData()!)
-            
-            data.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
-            
-            session.uploadTask(with: urlRequest, from: data) { data, response, error in
-                if let data = data, let string = String(data: data, encoding: .utf8) {
-                    print(string)
-                    
-                    // let json1 = try! JSONDecoder().decode(GelImageMetaData.self, from: data)
-                    do {
-                        let json = try JSONDecoder().decode(GelAnalysisResponse.self, from: data)
-                        print(json)
-                        DispatchQueue.main.async {
-                            // Deprecated, use completion instead of gelAnalysisResponse as published state object
-                            self.gelAnalysisResponse.append(json)
-                            // call completion function in view to return data
-                            completion(json)
-                            print("Ergebnis Titel")
-                            print(json.meta.title)
-                            print("Koordinaten yMin:")
-                            print(json.bands[0].yMin)
-                            //return json
-                        }
-                    } catch {
-                        print("JSON Format does not comply with GelAnalysisResponse. \(error)")
-                        //print(json.gelImageMetaDataDescription.)
-                    }
                 }
-            }.resume()
-        } // func getGelImageMetaData(...)
+            label: {
+                
+                Label("Feedback", systemImage: "ellipsis.bubble")
+                
+            } // NavigationLink
+                NavigationLink { Text("Settings")}
+            label: {
+                
+                Label("Settings", systemImage: "gear")
+                
+            }.navigationBarTitleDisplayMode(.inline)
+                // NavigationLink
+            }
+            // When images are selected, send them for analysis using the API with a POST requst
+            .onReceive(mediaItems.$items) { mitems in
+                //               self.imageAdded = true
+                print("Image changed")
+                //  Workaround to remove gel bands when new analysis is started. TODO: Make proper management of responses
+                self.gelAnalysisResponse.removeAll()
+                
+                for item in mitems {
+                    // use UUID given by iOS in struct to make it identifyable as filename
+                    let fileName = item.id + ".jpg"
+                    api.getGelImageMetaData(fileName: fileName, image: item.photo!) { result in
+                        // Set result xid to item.id but could also do this on server
+                        //                            result?.meta.xid = item.xid
+                        self.gelAnalysisResponse.append(result!) //TODO: Catch error when unwrapping
+                        print("Result")
+                        print(result!)
+                        //                            (self.gelAnalysisResponse.append(result)) ?? (self.gelAnalysisResponse = [result])
+                    }
+                    
+                    print("Analyse selected image")
+                    print(api.gelAnalysisResponse)
+                }
+            } // .onReceive
+            //                 } // List
+        } // NavigationView
+        //                .navigationTitle("Gelly")
+        //            } // else
         
-        // TODO: Delete fetchJSON, since it is a sample request for TODOs to test http requests
-        //    func fetchJSON() {
-        //        guard let url = URL(string: "https://jsonplaceholder.typicode.com/todos/") else { return }
-        //
-        //        let task = URLSession.shared.dataTask(with: url) { data, response, error in
-        //            if let data = data, let _ = String(data: data, encoding: .utf8) {
-        //               // print(string)
-        //
-        //                // https://developer.apple.com/documentation/foundation/jsondecoder
-        //                // For better debugging uncomment
-        //                // let json1 = try! JSONDecoder().decode([user].self, from: data)
-        //
-        //                // [user].self: data structure array of users to which JSON data from API call has to cast to
-        //                do {
-        //                let json = try JSONDecoder().decode([user].self, from: data)
-        //                    print(json[0])
-        //                    // Replace with async await?
-        //                    DispatchQueue.main.async {
-        //                        // self? ??
-        //                        self.users = json
-        //                    }
-        //                } catch  {
-        //                    print("JSON Format does not comply with struct keys.")
-        //                }
-        //            }
-        //        }
-        //        task.resume()
-        //    }
+    } // View
+    
+
+} // struct
+
+
+// Why Observable Object? Call this ViewModel?
+// TODO: Rename Api to something more useful
+class Api: ObservableObject {
+    // To automatically update the view when model changes, initiate a published empty array of users
+    // @Published var users: [user] = []
+    
+    //@Published var gelImageMetaData: [GelImageMetaData] = []
+    
+    // Array where multiple responses can be loaded into
+    @Published var gelAnalysisResponse: [GelAnalysisResponse] = []
+    
+    // @Published var column: [Column] = []
+    
+    // @State var image:UIImage = UIImage()
+    
+    // Take an UIImage, form a POST request and send it to analysis to obtain positions of bands and appends it to gelAnalysisResponse
+    // Why not return response instead of appending to @Published state object?
+    // Take a function that is executed when fetching data is completed and assigns the result to gelAnalysisResponse in view JSONContentUI
+    func getGelImageMetaData(fileName: String, image: UIImage, completion: @escaping (GelAnalysisResponse?) -> Void) {
+        
+        // TODO: Remove hardcoded URL
+        //            let url = URL(string: "http://127.0.0.1:1324/api/v1/electrophoresis/imageanalysis")
+        let url = URL(string: "http://167.172.190.93:1324/api/v1/electrophoresis/imageanalysis")
+        let boundary = UUID().uuidString
+        
+        let session = URLSession.shared
+        
+        var urlRequest = URLRequest(url: url!)
+        urlRequest.httpMethod = "POST"
+        
+        urlRequest.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        
+        var data = Data()
+        
+        // Add the image data to the raw http request data
+        data.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+        let paramName = "file"
+        
+        // TODO: send xid
+        data.append("Content-Disposition: form-data; name=\"\(paramName)\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
+        data.append("Content-Type: image/png\r\n\r\n".data(using: .utf8)!)
+        data.append(image.pngData()!)
+        
+        data.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        
+        session.uploadTask(with: urlRequest, from: data) { data, response, error in
+            if let data = data, let string = String(data: data, encoding: .utf8) {
+                print(string)
+                
+                // let json1 = try! JSONDecoder().decode(GelImageMetaData.self, from: data)
+                do {
+                    let json = try JSONDecoder().decode(GelAnalysisResponse.self, from: data)
+                    print(json)
+                    DispatchQueue.main.async {
+                        // Deprecated, use completion instead of gelAnalysisResponse as published state object
+                        self.gelAnalysisResponse.append(json)
+                        // call completion function in view to return data
+                        completion(json)
+                        print("Ergebnis Titel")
+                        print(json.meta.title)
+                        print("Koordinaten yMin:")
+                        print(json.bands[0].yMin)
+                        //return json
+                    }
+                } catch {
+                    print("JSON Format does not comply with GelAnalysisResponse. \(error)")
+                    //print(json.gelImageMetaDataDescription.)
+                }
+            }
+        }.resume()
+    } // func getGelImageMetaData(...)
+    
+   
 }
 
 
@@ -1220,13 +1145,13 @@ extension View {
     func snapshot() -> UIImage {
         let controller = UIHostingController(rootView: self)
         let view = controller.view
-
+        
         let targetSize = controller.view.intrinsicContentSize
         view?.bounds = CGRect(origin: .zero, size: targetSize)
         view?.backgroundColor = .clear
-
+        
         let renderer = UIGraphicsImageRenderer(size: targetSize)
-
+        
         return renderer.image { _ in
             view?.drawHierarchy(in: controller.view.bounds, afterScreenUpdates: true)
         }
