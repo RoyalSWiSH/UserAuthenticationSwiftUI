@@ -250,6 +250,7 @@ struct BandView: View {
     // TODO: Write test
     func transformPixelToBasePairs(yPositionInPixels: Int, pixelToBasePairReference: [PixelToBasePairArray]) -> Int {
         
+        // Fit function if two points are in reference ladder
         if pixelToBasePairReference.count > 1 {
             
             // Get the first band in the ladder on the upper image side with a larger DNA fragment size. x2
@@ -264,6 +265,11 @@ struct BandView: View {
             let lin_Cross = Double(lin_max_basePair) - lin_slope * Double(upperBand!.yPixel)
             
             let expCross = exp(lin_Cross)
+            
+            // Check if unreasonable value was passed
+            if expCross.isNaN {
+                return Int(0)
+            }
             
             return Int(round(powerMappingFromPixelToBasePair(yPositionInPixels: yPositionInPixels, exponent: lin_slope, yCross: expCross)))
             
@@ -710,7 +716,9 @@ struct JSONContentUI: View {
     // Reference ladder to convert pixels to baise pairs
     @State private var pixelToBasepairReference = [PixelToBasePairArray]()
     
+    // Alert popups when image is saved and when user tries to add band
     @State private var showingAlertSavedImage = false
+    @State private var showingAlertAddBand = false
     
     // Title of columns in gel images when identified as pockets
     @State private var bandColumns = [Column]()
@@ -919,7 +927,7 @@ struct JSONContentUI: View {
                                 //                                            uiImage = imageViewWithOverlay.snapshot()
                                 // uiImage = item.photo
                                 showingCropper = true
-                            }label: {
+                            } label: {
                                 Label("Crop", systemImage: "crop")
                             }.buttonStyle(BorderlessButtonStyle()) // Workaround to avoid Save and Crop action overlay each other https://stackoverflow.com/questions/58514891/two-buttons-inside-hstack-taking-action-of-each-other
                             .fullScreenCover(isPresented: $showingCropper, content: {
@@ -929,6 +937,16 @@ struct JSONContentUI: View {
                                     .ignoresSafeArea()
                             })
                             
+                            Button {
+
+                                showingAlertAddBand = true
+                                } label: {
+                                    Label("Add band", systemImage: "plus")
+                                }.buttonStyle(BorderlessButtonStyle())
+                                    .foregroundColor(Color.gray)
+                                 .alert("Adding bands manually is not implemented yet. We are on it. Sorry!", isPresented: $showingAlertAddBand) {
+                                        Button("OK", role: .cancel) { }
+                                    }
 //
 //                            if #available(iOS 16, *) {
 //                                // TODO: On a current XCode setup use ShareLink
@@ -970,7 +988,12 @@ struct JSONContentUI: View {
                             //
                         } // List
                         
-                        .navigationBarItems(leading: Button(action: {}, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")})        .sheet(isPresented: $showImagePicker, content: {
+                        .navigationBarItems(leading: Button(action: {
+                            self.mediaItems.deleteAll()
+                            self.pixelToBasepairReference.removeAll()
+                            self.gelAnalysisResponse.removeAll()
+                            
+                        }, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")})        .sheet(isPresented: $showImagePicker, content: {
                             PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
                                 showImagePicker = false
                             }
@@ -1014,6 +1037,7 @@ struct JSONContentUI: View {
                 for item in mitems {
                     // use UUID given by iOS in struct to make it identifyable as filename
                     let fileName = item.id + ".jpg"
+                    if item.photo != nil {
                     api.getGelImageMetaData(fileName: fileName, image: item.photo!) { result in
                         // Set result xid to item.id but could also do this on server
                         //                            result?.meta.xid = item.xid
@@ -1025,6 +1049,10 @@ struct JSONContentUI: View {
                     
                     print("Analyse selected image")
                     print(api.gelAnalysisResponse)
+                    }
+                    else {
+                        print("No image found for API request.")
+                    }
                 }
             } // .onReceive
             //                 } // List
