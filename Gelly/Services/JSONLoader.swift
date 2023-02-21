@@ -9,6 +9,10 @@ import Foundation
 import SwiftUI
 import Combine
 
+import Mixpanel
+import Adapty
+
+
 import Accelerate
 
 //import xid
@@ -76,7 +80,7 @@ struct GelAnalysisResponse: Codable, Hashable {
     // Ladder will be changed on the user client
     var ladder: Ladder
     let detection: Detection
-    let columns: [Column]
+    let columns: [Column]?
     let bands: [Band]
     
     enum CodingKeys: String, CodingKey {
@@ -347,7 +351,7 @@ struct BandView: View {
             
             if band.intensity == "pocket" {
                 Text("Edit column name").font(.headline).padding()
-                TextField("What name does the column have?",  text: $columnName)
+                TextField("What name does the column have?",  text: $columnName).padding()
             }
             else {
                 let bandSize = transformPixelToBasePairs(yPositionInPixels: ((band.yMin+band.yMax)/2), pixelToBasePairReference: pixelToBasepairReferenceLadder)
@@ -362,14 +366,22 @@ struct BandView: View {
 //                    if pixelToBasepairReferenceLadder.contains(where: {$0.bandXid == band.xid}) {
                 HStack{
                     Text("Reference Ladder")
-                    Toggle("Reference Band", isOn: $isReferenceBand).labelsHidden()
+                    Toggle("Reference Band", isOn: $isReferenceBand).labelsHidden().padding()
                 }
                     if isReferenceBand {
-                    TextField("What size does this band have?",  value: $band.bpSize, format: .number)
+                        Text("What fragment size does this band have in base pairs?")
+                            .padding()
+                    TextField("Enter band size in base pairs",  value: $band.bpSize, format: .number).padding()
+                        // TODO: Remove this button, use Toggle and binding instead
                         Button("Add Band to Ladder") {
                             self.pixelToBasepairReferenceLadder.append(PixelToBasePairArray(yPixel:( (band.yMin+band.yMax)/2), basePair: band.bpSize, bandXid: band.xid))
+                            Mixpanel.mainInstance().track(event: "Turn band into reference ladder")
+                                
                            
-                        }
+                        }.padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                             .clipShape(Capsule())
                         // Show array of base pair sizes for the reference ladder
                         Text("Ladder Px: " + (pixelToBasepairReferenceLadder.map{element in String(element.yPixel)}.joined(separator: ",")))
                         Text("Ladder Bp: " + (pixelToBasepairReferenceLadder.map{element in String(element.basePair)}.joined(separator: ",")))
@@ -565,7 +577,7 @@ struct Description: Codable, Hashable {
     let title, uid, apiVersion, jsonVersion: String
     let sampleType, experimentalMethod, units, ladder: String
     let detection: Detection
-    let columns: [Column]
+    let columns: [Column]?
     let image: ImageProperties
 }
 
@@ -719,6 +731,8 @@ struct JSONContentUI: View {
     // Alert popups when image is saved and when user tries to add band
     @State private var showingAlertSavedImage = false
     @State private var showingAlertAddBand = false
+    @State private var showingAlertFailedPurchase = false
+    @State private var showingAlertSuccessPurchase = false
     
     // Title of columns in gel images when identified as pockets
     @State private var bandColumns = [Column]()
@@ -734,8 +748,10 @@ struct JSONContentUI: View {
     
     // Feedback upvoty or frill for WebView
     private var feedbackUrl: URL? = URL(string: "https://app.frill.co/embed/widget/4fd962c8-0f6d-4311-99a8-1c04977462dc")
+    private var surveyUrl: URL? = URL(string: "https://tripetto.app/run/YPQB4FVX4Y")
     
-    
+    @State private var subscriptionProducts: [AdaptyPaywallProduct] = []
+
     // Not used 27. Jan 2023
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
@@ -820,6 +836,7 @@ struct JSONContentUI: View {
         //        else {
         NavigationView{
             List {
+                Section {
                 NavigationLink {
                     VStack {
                         
@@ -924,9 +941,10 @@ struct JSONContentUI: View {
                             Spacer()
                             // MARK: Save and Crop
                             Button {
-                                //                                            uiImage = imageViewWithOverlay.snapshot()
-                                // uiImage = item.photo
                                 showingCropper = true
+                                // When image is cropped, the scale of y-Axis changes and therfore the pixel to bp mapping becomes invalid
+                                // TODO: This removes ladder, as soon as crop button is hit, better would be after image is cropped to avoid removing the ladder when user cancles cropping. Even better, map Ladder to new y-Values.
+                                self.pixelToBasepairReference.removeAll()
                             } label: {
                                 Label("Crop", systemImage: "crop")
                             }.buttonStyle(BorderlessButtonStyle()) // Workaround to avoid Save and Crop action overlay each other https://stackoverflow.com/questions/58514891/two-buttons-inside-hstack-taking-action-of-each-other
@@ -940,6 +958,7 @@ struct JSONContentUI: View {
                             Button {
 
                                 showingAlertAddBand = true
+                                Mixpanel.mainInstance().track(event: "Try to add band manually")
                                 } label: {
                                     Label("Add band", systemImage: "plus")
                                 }.buttonStyle(BorderlessButtonStyle())
@@ -970,6 +989,7 @@ struct JSONContentUI: View {
                                     let image = imageViewWithOverlay.snapshot()
                                     
                                     UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                                    Mixpanel.mainInstance().track(event: "Save annotated image to library")
                                     showingAlertSavedImage = true
                                 } label: {
                                     Label("Save", systemImage: "square.and.arrow.down")
@@ -989,11 +1009,19 @@ struct JSONContentUI: View {
                         } // List
                         
                         .navigationBarItems(leading: Button(action: {
+                            Mixpanel.mainInstance().track(event: "Trash",
+                                                          properties: ["Number of Media Items" : self.$mediaItems.items.count])
                             self.mediaItems.deleteAll()
                             self.pixelToBasepairReference.removeAll()
                             self.gelAnalysisResponse.removeAll()
+//                            print("Trash")
+//                            Mixpanel.initialize(token: "e69103063a3c6a5aa0a362b4413e9e1b", trackAutomaticEvents: true, serverURL: "https://api-eu.mixpanel.com/")
+                            Mixpanel.mainInstance().track(event: "Trash",
+                                            properties: ["Plan" : "Premium"])
                             
-                        }, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true }, label: {Image(systemName: "plus")})        .sheet(isPresented: $showImagePicker, content: {
+                        }, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true
+                          
+                        }, label: {Image(systemName: "plus")})        .sheet(isPresented: $showImagePicker, content: {
                             PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
                                 showImagePicker = false
                             }
@@ -1007,30 +1035,97 @@ struct JSONContentUI: View {
                     
                 } // NavigationLink
             label: {
-                Label("Notebook", systemImage: "pencil")
+                Label("Gel Images", systemImage: "pencil")
             } // NavigationLink
-                NavigationLink { WebView(url:  self.feedbackUrl!).navigationBarTitle(Text("Feedback"))
+            } // Section
+                Section {
+                NavigationLink { WebView(url:  self.feedbackUrl!).navigationBarTitle(Text("Vote!"))
                     //                            .navigationBarTitleDisplayMode(.inline)
                         .navigationBarHidden(true)
                     
                 }
             label: {
                 
-                Label("Feedback", systemImage: "ellipsis.bubble")
+                Label("Vote Ideas!", systemImage: "arrowtriangle.up.square.fill")
                 
             } // NavigationLink
-                NavigationLink { Text("Settings")}
+                NavigationLink { WebView(url:  self.surveyUrl!).navigationBarTitle(Text("Survey"))
+                    //                            .navigationBarTitleDisplayMode(.inline)
+                        .navigationBarHidden(true)
+                    
+                }
+            label: {
+                
+                Label("Survey", systemImage: "person.wave.2")
+                
+            } // NavigationLink
+                    NavigationLink { Text("Settings")
+                        ForEach(self.subscriptionProducts, id:\.skProduct) { product in
+                            Button("Buy \(product.localizedTitle) for \(product.localizedPrice ?? "No Price")") {
+                                Adapty.makePurchase(product: product) { result in
+                                    switch result {
+                                    case let .success(profile):
+                                        // successful purchase
+                                        print("Subscribed to product")
+                                        self.showingAlertSuccessPurchase = true
+                                        
+                                    case let .failure(error):
+                                        // handle the error
+                                        print("Not subscribed")
+                                        self.showingAlertFailedPurchase = true
+                                    }
+                                }
+                            }
+                            .alert("Failed Purchase", isPresented: $showingAlertFailedPurchase) {
+                                   Button("OK", role: .cancel) { }
+                               }
+                            .alert("Successfull Purchase", isPresented: $showingAlertSuccessPurchase) {
+                                   Button("OK", role: .cancel) { }
+                               }
+                        }
+                      
+              
+                    }// Navigation Link
+                        
+                    
             label: {
                 
                 Label("Settings", systemImage: "gear")
                 
             }.navigationBarTitleDisplayMode(.inline)
-                // NavigationLink
-            }
+                        .onAppear() { Adapty.getPaywall("demopaywall", locale: "en") { result in
+                            switch result {
+                                case let .success(paywall):
+                                    // the requested paywall
+//                                    print(paywall)
+                                Adapty.getPaywallProducts(paywall: paywall) { result3 in
+                                    switch result3 {
+                                    case let .success(products):
+                                        self.subscriptionProducts = products
+                     
+                                        // the requested products array
+                                    case let .failure(error):
+                                        // handle the error
+                                        print(error)
+                    
+                                    } // switch result3
+                                    
+                                } // getpaywallproducts
+                                
+                                case let .failure(error):
+                                    // handle the error
+                                    print(error)
+                            } // switch result of paywall
+                            } // get paywall} /
+                        } // NavigationLink
+                } // Section
+            } // List
             // When images are selected, send them for analysis using the API with a POST requst
             .onReceive(mediaItems.$items) { mitems in
                 //               self.imageAdded = true
                 print("Image changed")
+                Mixpanel.mainInstance().track(event: "Add new gel image",
+                                              properties: ["Number of Media Items" : mitems.count])
                 //  Workaround to remove gel bands when new analysis is started. TODO: Make proper management of responses
                 self.gelAnalysisResponse.removeAll()
                 
@@ -1057,13 +1152,14 @@ struct JSONContentUI: View {
             } // .onReceive
             //                 } // List
         } // NavigationView
+        }
         //                .navigationTitle("Gelly")
         //            } // else
         
     } // View
     
 
-} // struct
+//} // struct
 
 
 // Why Observable Object? Call this ViewModel?
@@ -1230,6 +1326,7 @@ struct ImageCropper: UIViewControllerRepresentable {
         func cropViewControllerDidCrop(_ cropViewController: CropViewController, cropped: UIImage, transformation: Transformation, cropInfo: CropInfo) {
             parent.image = cropped
             print("transformation is \(transformation)")
+            
             parent.presentationMode.wrappedValue.dismiss()
         }
         

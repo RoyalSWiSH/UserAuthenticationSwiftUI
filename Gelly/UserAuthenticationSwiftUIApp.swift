@@ -8,12 +8,35 @@
 import SwiftUI
 import Firebase
 import FirebaseCore
+import Mixpanel
+import Adapty
 
 //:MARK Add App Delegate to initialize Firebase or Supabase
 // Do I need @UIApplicationMain?
 final class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-    FirebaseApp.configure()
+   
+
+        FirebaseApp.configure()
+        
+    // In-App Analytics
+//    Mixpanel.initialize(token: "e69103063a3c6a5aa0a362b4413e9e1b", trackAutomaticEvents: true)
+
+//    mixpanel.serverURL = "https://api-eu.mixpanel.com"
+        print("Init mixpanel")
+        var mixpanel = Mixpanel.initialize(token: "e69103063a3c6a5aa0a362b4413e9e1b", trackAutomaticEvents: true)
+        mixpanel.serverURL = "https://api-eu.mixpanel.com"
+        mixpanel.track(event: "App Opened", properties: [
+            "source": "mixpanel",
+            "Opted out of email": true
+        ])
+     Mixpanel.initialize(token: "e69103063a3c6a5aa0a362b4413e9e1b", trackAutomaticEvents: true, serverURL: "https://api-eu.mixpanel.com/")
+        Mixpanel.mainInstance().track(event: "App Opened", properties: [
+            "source": "Mixpanel",
+            "Opted out of email": true
+        ])
+        // Subscription management
+        Adapty.activate("public_live_r2z6oX4U.UgtZd8j2w9x6ASf7tugJ")
     return true
     }
 }

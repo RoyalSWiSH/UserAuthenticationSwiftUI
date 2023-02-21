@@ -11,6 +11,15 @@
         }
       },
       {
+        "package": "Adapty",
+        "repositoryURL": "https://github.com/adaptyteam/AdaptySDK-iOS.git",
+        "state": {
+          "branch": "master",
+          "revision": "8aa82ff00f58e53fbd384a596e058a1aaa0a1a4f",
+          "version": null
+        }
+      },
+      {
         "package": "BoringSSL-GRPC",
         "repositoryURL": "https://github.com/firebase/boringssl-SwiftPM.git",
         "state": {
@@ -89,6 +98,15 @@
           "branch": null,
           "revision": "d6880eb97267248f89e6cef2dd52785d50627639",
           "version": "1.9.0"
+        }
+      },
+      {
+        "package": "Mixpanel",
+        "repositoryURL": "https://github.com/mixpanel/mixpanel-swift",
+        "state": {
+          "branch": "master",
+          "revision": "78dd1217606ad41e00bfa82a5f83837524550891",
+          "version": null
         }
       },
       {

@@ -17,6 +17,7 @@
 		8937577427878AEB00060581 /* ForgotPasswordViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8937577327878AEB00060581 /* ForgotPasswordViewModel.swift */; };
 		897BD0FC2789D2FE000D3EF1 /* ImagePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897BD0FB2789D2FE000D3EF1 /* ImagePickerView.swift */; };
 		897BD0FE2789DB85000D3EF1 /* PickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897BD0FD2789DB84000D3EF1 /* PickerViewController.swift */; };
+		897C2B6F29A4714B00DB835B /* Adapty in Frameworks */ = {isa = PBXBuildFile; productRef = 897C2B6E29A4714B00DB835B /* Adapty */; };
 		8999E0992814A00400ABF937 /* SendGelImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8999E0982814A00400ABF937 /* SendGelImageView.swift */; };
 		8999E09B2814A02600ABF937 /* SendGelImageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8999E09A2814A02600ABF937 /* SendGelImageModel.swift */; };
 		8999E09D2814A03F00ABF937 /* SendGelImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8999E09C2814A03F00ABF937 /* SendGelImageViewController.swift */; };
@@ -24,6 +25,9 @@
 		8999E0A22819F5E900ABF937 /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8999E0A12819F5E900ABF937 /* ImageLoader.swift */; };
 		8999E0A4281EB50000ABF937 /* JSONLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8999E0A3281EB4FC00ABF937 /* JSONLoader.swift */; };
 		899DADF72964E92300CEE434 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 899DADF62964E92300CEE434 /* GoogleService-Info.plist */; };
+		89A0010929A2D7230064CD51 /* Mixpanel in Frameworks */ = {isa = PBXBuildFile; productRef = 89A0010829A2D7230064CD51 /* Mixpanel */; };
+		89A0010B29A2F7A40064CD51 /* RegistrationDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89A0010A29A2F7A30064CD51 /* RegistrationDetails.swift */; };
+		89A0010D29A2F7C20064CD51 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89A0010C29A2F7C10064CD51 /* Home.swift */; };
 		89AE62502777D09300BDE362 /* UserAuthenticationSwiftUIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89AE624F2777D09300BDE362 /* UserAuthenticationSwiftUIApp.swift */; };
 		89AE62542777D09800BDE362 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89AE62532777D09800BDE362 /* Assets.xcassets */; };
 		89AE62572777D09800BDE362 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89AE62562777D09800BDE362 /* Preview Assets.xcassets */; };
@@ -38,7 +42,6 @@
 		89AE62902783E55B00BDE362 /* CloseModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89AE628F2783E55B00BDE362 /* CloseModifier.swift */; };
 		89AE629427845A3B00BDE362 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89AE629327845A3B00BDE362 /* HomeView.swift */; };
 		89AE629627845B5600BDE362 /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89AE629527845B5600BDE362 /* ForgotPasswordView.swift */; };
-		89AE629927849EC600BDE362 /* RegistrationDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89AE629827849EC400BDE362 /* RegistrationDetails.swift */; };
 		89AE629C27849FA800BDE362 /* RegistrationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89AE629B27849FA800BDE362 /* RegistrationService.swift */; };
 		89BB1A732965A4C20067E63D /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 89BB1A722965A4C20067E63D /* FirebaseAuth */; };
 		89BB1A752965A4C30067E63D /* FirebaseAuthCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 89BB1A742965A4C30067E63D /* FirebaseAuthCombine-Community */; };
@@ -86,6 +89,8 @@
 		8999E0A12819F5E900ABF937 /* ImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoader.swift; sourceTree = "<group>"; };
 		8999E0A3281EB4FC00ABF937 /* JSONLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONLoader.swift; sourceTree = "<group>"; };
 		899DADF62964E92300CEE434 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		89A0010A29A2F7A30064CD51 /* RegistrationDetails.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegistrationDetails.swift; sourceTree = "<group>"; };
+		89A0010C29A2F7C10064CD51 /* Home.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
 		89AE624C2777D09300BDE362 /* Gelly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gelly.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		89AE624F2777D09300BDE362 /* UserAuthenticationSwiftUIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAuthenticationSwiftUIApp.swift; sourceTree = "<group>"; };
 		89AE62532777D09800BDE362 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -106,7 +111,6 @@
 		89AE628F2783E55B00BDE362 /* CloseModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloseModifier.swift; sourceTree = "<group>"; };
 		89AE629327845A3B00BDE362 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		89AE629527845B5600BDE362 /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordView.swift; sourceTree = "<group>"; };
-		89AE629827849EC400BDE362 /* RegistrationDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RegistrationDetails.swift; path = UserAuthenticationSwiftUI/ViewComponents/RegistrationDetails.swift; sourceTree = SOURCE_ROOT; };
 		89AE629B27849FA800BDE362 /* RegistrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistrationService.swift; sourceTree = "<group>"; };
 		89C7BF7827FA1D7F0005BF7C /* PhotoPickerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoPickerModel.swift; sourceTree = "<group>"; };
 		89EE79BE299555C000DCD967 /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebView.swift; sourceTree = "<group>"; };
@@ -120,10 +124,12 @@
 			files = (
 				89BB1A792965A4C30067E63D /* FirebaseDatabaseSwift in Frameworks */,
 				89BB1A772965A4C30067E63D /* FirebaseDatabase in Frameworks */,
+				897C2B6F29A4714B00DB835B /* Adapty in Frameworks */,
 				89BB1A732965A4C20067E63D /* FirebaseAuth in Frameworks */,
 				89BB1A7B2965A4C30067E63D /* FirebaseFirestore in Frameworks */,
 				89BB1A752965A4C30067E63D /* FirebaseAuthCombine-Community in Frameworks */,
 				89F8FA2B2985FEE7000EB99B /* Mantis in Frameworks */,
+				89A0010929A2D7230064CD51 /* Mixpanel in Frameworks */,
 				89BB1A7D2965A4C30067E63D /* FirebaseFirestoreSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -296,9 +302,9 @@
 			children = (
 				89EE79BE299555C000DCD967 /* WebView.swift */,
 				89F8FA2D2988A788000EB99B /* Packages */,
-				89AE624E2777D09300BDE362 /* UserAuthenticationSwiftUI */,
-				89AE62602777D09800BDE362 /* UserAuthenticationSwiftUITests */,
-				89AE626B2777D09800BDE362 /* UserAuthenticationSwiftUIUITests */,
+				89AE624E2777D09300BDE362 /* Gelly */,
+				89AE62602777D09800BDE362 /* GellyTests */,
+				89AE626B2777D09800BDE362 /* GellyUITests */,
 				89AE624D2777D09300BDE362 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -313,7 +319,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		89AE624E2777D09300BDE362 /* UserAuthenticationSwiftUI */ = {
+		89AE624E2777D09300BDE362 /* Gelly */ = {
 			isa = PBXGroup;
 			children = (
 				8999E09E28183C6700ABF937 /* GelImagesSampleData */,
@@ -333,7 +339,7 @@
 				89AE62582777D09800BDE362 /* Info.plist */,
 				89AE62552777D09800BDE362 /* Preview Content */,
 			);
-			path = UserAuthenticationSwiftUI;
+			path = Gelly;
 			sourceTree = "<group>";
 		};
 		89AE62552777D09800BDE362 /* Preview Content */ = {
@@ -344,22 +350,22 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		89AE62602777D09800BDE362 /* UserAuthenticationSwiftUITests */ = {
+		89AE62602777D09800BDE362 /* GellyTests */ = {
 			isa = PBXGroup;
 			children = (
 				89AE62612777D09800BDE362 /* UserAuthenticationSwiftUITests.swift */,
 				89AE62632777D09800BDE362 /* Info.plist */,
 			);
-			path = UserAuthenticationSwiftUITests;
+			path = GellyTests;
 			sourceTree = "<group>";
 		};
-		89AE626B2777D09800BDE362 /* UserAuthenticationSwiftUIUITests */ = {
+		89AE626B2777D09800BDE362 /* GellyUITests */ = {
 			isa = PBXGroup;
 			children = (
 				89AE626C2777D09800BDE362 /* UserAuthenticationSwiftUIUITests.swift */,
 				89AE626E2777D09800BDE362 /* Info.plist */,
 			);
-			path = UserAuthenticationSwiftUIUITests;
+			path = GellyUITests;
 			sourceTree = "<group>";
 		};
 		89AE627E2778DF4300BDE362 /* BaseComponents */ = {
@@ -377,6 +383,8 @@
 		89AE62882783694D00BDE362 /* ViewComponents */ = {
 			isa = PBXGroup;
 			children = (
+				89A0010C29A2F7C10064CD51 /* Home.swift */,
+				89A0010A29A2F7A30064CD51 /* RegistrationDetails.swift */,
 				89AE628B2783DE2C00BDE362 /* RegisterView.swift */,
 				89AE629327845A3B00BDE362 /* HomeView.swift */,
 			);
@@ -386,7 +394,6 @@
 		89AE629727849EAC00BDE362 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				89AE629827849EC400BDE362 /* RegistrationDetails.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -433,6 +440,8 @@
 				89BB1A7A2965A4C30067E63D /* FirebaseFirestore */,
 				89BB1A7C2965A4C30067E63D /* FirebaseFirestoreSwift */,
 				89F8FA2A2985FEE7000EB99B /* Mantis */,
+				89A0010829A2D7230064CD51 /* Mixpanel */,
+				897C2B6E29A4714B00DB835B /* Adapty */,
 			);
 			productName = UserAuthenticationSwiftUI;
 			productReference = 89AE624C2777D09300BDE362 /* Gelly.app */;
@@ -508,6 +517,8 @@
 			packageReferences = (
 				89BB1A712965A4C20067E63D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				89F8FA292985FEE4000EB99B /* XCRemoteSwiftPackageReference "Mantis" */,
+				89A0010729A2D7220064CD51 /* XCRemoteSwiftPackageReference "mixpanel-swift" */,
+				897C2B6D29A4714A00DB835B /* XCRemoteSwiftPackageReference "AdaptySDK-iOS" */,
 			);
 			productRefGroup = 89AE624D2777D09300BDE362 /* Products */;
 			projectDirPath = "";
@@ -553,6 +564,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				893757632787505E00060581 /* LoginService.swift in Sources */,
+				89A0010D29A2F7C20064CD51 /* Home.swift in Sources */,
 				8999E0992814A00400ABF937 /* SendGelImageView.swift in Sources */,
 				8999E0A4281EB50000ABF937 /* JSONLoader.swift in Sources */,
 				8999E09B2814A02600ABF937 /* SendGelImageModel.swift in Sources */,
@@ -562,7 +574,6 @@
 				89AE62862779299700BDE362 /* ButtonView.swift in Sources */,
 				89AE629C27849FA800BDE362 /* RegistrationService.swift in Sources */,
 				8999E09D2814A03F00ABF937 /* SendGelImageViewController.swift in Sources */,
-				89AE629927849EC600BDE362 /* RegistrationDetails.swift in Sources */,
 				890491802785EFF6007D1FEE /* SessionService.swift in Sources */,
 				897BD0FC2789D2FE000D3EF1 /* ImagePickerView.swift in Sources */,
 				89375768278765F400060581 /* LoginViewModel.swift in Sources */,
@@ -570,6 +581,7 @@
 				8999E0A22819F5E900ABF937 /* ImageLoader.swift in Sources */,
 				89AE62902783E55B00BDE362 /* CloseModifier.swift in Sources */,
 				89C7BF7927FA1D7F0005BF7C /* PhotoPickerModel.swift in Sources */,
+				89A0010B29A2F7A40064CD51 /* RegistrationDetails.swift in Sources */,
 				8937576027874FF900060581 /* LoginCredentials.swift in Sources */,
 				89AE628C2783DE2D00BDE362 /* RegisterView.swift in Sources */,
 				89AE628227790A9200BDE362 /* PreviewLayoutComponentModifier.swift in Sources */,
@@ -739,11 +751,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2023020902;
-				DEVELOPMENT_ASSET_PATHS = "\"UserAuthenticationSwiftUI/Preview Content\"";
+				CURRENT_PROJECT_VERSION = 2023021901;
+				DEVELOPMENT_ASSET_PATHS = "\"Gelly/Preview Content\"";
 				DEVELOPMENT_TEAM = 9BX84Q88ES;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = UserAuthenticationSwiftUI/Info.plist;
+				INFOPLIST_FILE = Gelly/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -763,11 +775,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2023020902;
-				DEVELOPMENT_ASSET_PATHS = "\"UserAuthenticationSwiftUI/Preview Content\"";
+				CURRENT_PROJECT_VERSION = 2023021901;
+				DEVELOPMENT_ASSET_PATHS = "\"Gelly/Preview Content\"";
 				DEVELOPMENT_TEAM = 9BX84Q88ES;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = UserAuthenticationSwiftUI/Info.plist;
+				INFOPLIST_FILE = Gelly/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -907,6 +919,22 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		897C2B6D29A4714A00DB835B /* XCRemoteSwiftPackageReference "AdaptySDK-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/adaptyteam/AdaptySDK-iOS.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+		89A0010729A2D7220064CD51 /* XCRemoteSwiftPackageReference "mixpanel-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mixpanel/mixpanel-swift";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		89BB1A712965A4C20067E63D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
@@ -926,6 +954,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		897C2B6E29A4714B00DB835B /* Adapty */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 897C2B6D29A4714A00DB835B /* XCRemoteSwiftPackageReference "AdaptySDK-iOS" */;
+			productName = Adapty;
+		};
+		89A0010829A2D7230064CD51 /* Mixpanel */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 89A0010729A2D7220064CD51 /* XCRemoteSwiftPackageReference "mixpanel-swift" */;
+			productName = Mixpanel;
+		};
 		89BB1A722965A4C20067E63D /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 89BB1A712965A4C20067E63D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
