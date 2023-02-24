@@ -8,9 +8,9 @@
 import Foundation
 import SwiftUI
 import Combine
-
-import Mixpanel
 import Adapty
+import Mixpanel
+
 
 
 import Accelerate
@@ -211,6 +211,111 @@ struct Band: Codable, Hashable {
     }
 }
 
+struct StatusMessagesView: View {
+    // TODO: Remove these and refere to view model
+//    @State var pixelToBasepairReferenceLadder: [PixelToBasePairArray]
+//    @State var gelAnalysisResponse: [GelAnalysisResponse]
+    @ObservedObject var viewModel: GelAnalysisViewModel
+    
+    var body: some View {
+        HStack{
+            // Some status messages for the user
+            if viewModel.gelAnalysisResponse.isEmpty {
+                // TODO: Better placement or overlay over image
+          
+                ProgressView("Analyzing Gel Image...")
+            }
+            else if viewModel.pixelToBasepairReferenceLadder.count < 2 {
+                Image(systemName: "info.circle")
+                Text("Select two bands per double tap as reference and assign a size.")
+            }
+            else {
+                Image(systemName: "info.circle")
+                Text("Data is not saved in this beta version. Save images to library.")
+            }
+    } // HStack
+} // some View
+} // StatusMessagesView
+
+struct GelImageActionButtonsView: View {
+    @ObservedObject var viewModel: GelAnalysisViewModel
+    // index of mediaItem
+    var index: Int
+    // call with imageViewWithOverlay.snapshot() for saving as JPG
+    var imageViewWithOverlay: AnyView
+    
+    // Popup Alerts
+    @State private var showingAlertSavedImage = false
+    @State private var showingAlertAddBand = false
+    
+    // Cropping images
+    @State var cropRectImage = CGRect(x: 0, y: 0, width: 1, height: 1)
+    @State private var showingCropper = false
+    @State private var cropShapeType: Mantis.CropShapeType = .rect
+    @State private var presetFixedRatioType: Mantis.PresetFixedRatioType = .canUseMultiplePresetFixedRatio()
+    
+    var body: some View {
+        Button {
+            showingCropper = true
+            // When image is cropped, the scale of y-Axis changes and therfore the pixel to bp mapping becomes invalid
+            // TODO: This removes ladder, as soon as crop button is hit, better would be after image is cropped to avoid removing the ladder when user cancles cropping. Even better, map Ladder to new y-Values.
+            self.viewModel.pixelToBasepairReferenceLadder.removeAll()
+        } label: {
+            Label("Crop", systemImage: "crop")
+        }.buttonStyle(BorderlessButtonStyle()) // Workaround to avoid Save and Crop action overlay each other https://stackoverflow.com/questions/58514891/two-buttons-inside-hstack-taking-action-of-each-other
+        .fullScreenCover(isPresented: $showingCropper, content: {
+            ImageCropper(image: self.$viewModel.mediaItems.items[index].photo,
+                         cropShapeType: $cropShapeType,
+                         presetFixedRatioType: $presetFixedRatioType)
+                .ignoresSafeArea()
+        })
+        
+        Button {
+
+            showingAlertAddBand = true
+            
+            Mixpanel.mainInstance().track(event: "Try to add band manually")
+            } label: {
+                Label("Add band", systemImage: "plus")
+            }.buttonStyle(BorderlessButtonStyle())
+                .foregroundColor(Color.gray)
+             .alert("Adding bands manually is not implemented yet. We are on it. Sorry!", isPresented: $showingAlertAddBand) {
+                    Button("OK", role: .cancel) { }
+                }
+//
+//                            if #available(iOS 16, *) {
+//                                // TODO: On a current XCode setup use ShareLink
+//                                // Run code in iOS 15 or later.
+//                                //    ShareLink("Export", item: imageViewWithOverlay, preview: SharePreview(Text("Shared image"), image: imageViewWithOverlay))
+//                                Button {
+//                                    let image = imageViewWithOverlay.snapshot()
+//
+//                                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+//                                    showingAlertSavedImage = true
+//                                } label: {
+//                                    Label("Save", systemImage: "square.and.arrow.down")
+//                                }
+//                                .alert("Image saved. To view and share go to image library.", isPresented: $showingAlertSavedImage) {
+//                                    Button("OK", role: .cancel) { }
+//                                }
+//
+//                            } else {
+            // Fall back to earlier iOS APIs.
+            Button {
+//                let image = imageViewWithOverlay.snapshot()
+                
+                UIImageWriteToSavedPhotosAlbum(self.imageViewWithOverlay.snapshot(), nil, nil, nil)
+                Mixpanel.mainInstance().track(event: "Save annotated image to library")
+                showingAlertSavedImage = true
+            } label: {
+                Label("Save", systemImage: "square.and.arrow.down")
+            }.buttonStyle(BorderlessButtonStyle())
+            .alert("Image saved. To view and share go to image library.", isPresented: $showingAlertSavedImage) {
+                Button("OK", role: .cancel) { }
+            }
+    }
+}
+
 struct BandView: View {
     @State var band: Band
     
@@ -316,7 +421,7 @@ struct BandView: View {
     var body: some View {
         
         
-        VStack {
+        ZStack {
             //            if UIScreen.main.bounds.size.width < 100 {
             //                fontSize = 10
             //            } else {
@@ -327,15 +432,15 @@ struct BandView: View {
             //            Text(band.column.name)
             //                .border(.green)
                 .foregroundColor(.black)
-                .font(.system(size: 14, weight: .light, design: .default))
+                .font(.system(size: 10, weight: .light, design: .default))
             //                .minimumScaleFactor(0.01)
                 .padding(CGFloat(3))
-                .minimumScaleFactor(0.3)
+                .minimumScaleFactor(0.2)
             
         } // VStack
-        .frame(minWidth:10, idealWidth: 15, maxWidth: 50, minHeight: 5, idealHeight:5, maxHeight: 20, alignment: .center)
+        .frame(minWidth:10, idealWidth: 15, maxWidth: 50, minHeight: 3, idealHeight:3, maxHeight: 20, alignment: .center)
         .background(Color.white.opacity(0.6))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: 5))
         .onTapGesture(count: 2) {
             self.isShowingPopover = true
             
@@ -397,9 +502,7 @@ struct BandView: View {
               
             }
             
-          
-            
-            
+
             if UIDevice.current.userInterfaceIdiom == .phone {
                 Button("Close popup") {
                     // TODO: Make an x top right
@@ -699,16 +802,37 @@ enum FittingError: Error {
     
 }
 
+
+// Main View Model
+class GelAnalysisViewModel: ObservableObject {
+    @Published var gelAnalysisResponse: [GelAnalysisResponse] = [GelAnalysisResponse]()
+    
+    @ObservedObject var mediaItems = PickedMediaItems()
+    
+    @Published var pixelToBasepairReferenceLadder: [PixelToBasePairArray] = [PixelToBasePairArray]()
+    
+    init() {
+        
+    }
+    
+    
+}
+
 // View to show data from API request in UI
 @available(iOS 15.0, *)
 struct JSONContentUI: View {
+    
+    
+    
     @available(iOS 15.0, *)
     //Check Array
     @State private var results =  [Result]()
     
     // Take an image and make a POST request
     @StateObject var api = Api()
+    // Deprecated
     @State var gelAnalysisResponse = [GelAnalysisResponse]()
+    
     
     // Image used to send as POST request
     @State var image:UIImage = UIImage()
@@ -719,32 +843,30 @@ struct JSONContentUI: View {
     
     // Pick image from library
     @State var showImagePicker: Bool = false
-    @ObservedObject var mediaItems = PickedMediaItems()
+    // Deprecated
+//    @ObservedObject var mediaItems = PickedMediaItems()
     @State private var imageAdded = false
     
     
     // Sample data for initialization
     @State private var selectedBandItem:Band = Band(column: Column(index: 0, name: ""), bpSize: 100, intensity: "low", smear: "low", xid: "342qwasdf", confidence:1.0, xMin: 200, yMin: 100, xMax: 240, yMax: 140)
     // Reference ladder to convert pixels to baise pairs
-    @State private var pixelToBasepairReference = [PixelToBasePairArray]()
+//    @State private var pixelToBasepairReference = [PixelToBasePairArray]()
     
     // Alert popups when image is saved and when user tries to add band
-    @State private var showingAlertSavedImage = false
-    @State private var showingAlertAddBand = false
+   
     @State private var showingAlertFailedPurchase = false
     @State private var showingAlertSuccessPurchase = false
     
     // Title of columns in gel images when identified as pockets
     @State private var bandColumns = [Column]()
     
-    // Croping images
-    @State var cropRectImage = CGRect(x: 0, y: 0, width: 1, height: 1)
-    @State private var showingCropper = false
+
     // TODO: match this to images selected from image library in mediaItems somehow
     @State private var uiImage: UIImage = UIImage()
     
-    @State private var cropShapeType: Mantis.CropShapeType = .rect
-    @State private var presetFixedRatioType: Mantis.PresetFixedRatioType = .canUseMultiplePresetFixedRatio()
+    // Main View Model that contains pixelToBasepairReference, mediaItems and gelAnalysisResponse. Globally available as EnvironmentObject
+    @ObservedObject var viewModel: GelAnalysisViewModel
     
     // Feedback upvoty or frill for WebView
     private var feedbackUrl: URL? = URL(string: "https://app.frill.co/embed/widget/4fd962c8-0f6d-4311-99a8-1c04977462dc")
@@ -752,8 +874,9 @@ struct JSONContentUI: View {
     
     @State private var subscriptionProducts: [AdaptyPaywallProduct] = []
 
-    // Not used 27. Jan 2023
+    // Detect portrait and landscape (and landscape split screen...) orientation with size classes
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    @Environment(\.verticalSizeClass) var verticalSizeClass
     
     
     
@@ -770,7 +893,10 @@ struct JSONContentUI: View {
     // var asyncImage = AsyncImage(url: url, placeholder: { Text("Loading ... 123")
     // })
     
-    
+    init() {
+//        self.viewModel = GelAnalysisViewModel(gelAnalysisResponse: gelAnalysisResponse, mediaItems: mediaItems, pixelToBasepairReference: pixelToBasepairReference)
+        self.viewModel = GelAnalysisViewModel()
+    }
     
     // Functions to adjust the positioning in overlay to the screen resized image
     // TODO: Get px height of image
@@ -841,8 +967,8 @@ struct JSONContentUI: View {
                     VStack {
                         
                         //                Text("Welcome to SnowSeeker!")
-                        List(mediaItems.items.indices, id: \.self) { index in
-                            let item = mediaItems.items[index]
+                        List(viewModel.mediaItems.items.indices, id: \.self) { index in
+                            let item = viewModel.mediaItems.items[index]
                             
                                    
                             let imageViewWithOverlay = ZStack(alignment: .topLeading) {
@@ -854,7 +980,7 @@ struct JSONContentUI: View {
                                     
                                     
                                     
-                                    Image(uiImage: mediaItems.items[index].photo!)
+                                    Image(uiImage: viewModel.mediaItems.items[index].photo!)
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                     // this overlay section is a dublication as in AsyncImage below, TODO: move out to and consolidate in separate function.
@@ -871,9 +997,11 @@ struct JSONContentUI: View {
                                                 
                                                 // Check if there are equal number of analysis results as there are images.
                                                 // For example when an image is selected but before it is send to the server those are not equal and therefore there are no bands to draw
-                                                if self.gelAnalysisResponse.count == mediaItems.items.count {
+                                                if viewModel.gelAnalysisResponse.count == viewModel.mediaItems.items.count {
                                                     
-                                                    let imageResponse = self.gelAnalysisResponse.first(where: { $0.gelImage.xid == mediaItems.items[index].id } )
+                                                    // Match ids of GelAnalysisResponse and mediaItems.
+                                                    // TODO: This should be unnecessary with the view model now, make an array of view models instead
+                                                    let imageResponse = viewModel.gelAnalysisResponse.first(where: { $0.gelImage.xid == viewModel.mediaItems.items[index].id } )
                                                     
                                                     //                                                        self.gelAnalysisResponse[index].bands
                                                     ForEach(imageResponse!.bands, id: \.self) { band in
@@ -882,11 +1010,11 @@ struct JSONContentUI: View {
                                                         //
                                                         
                                                         
-                                                        BandView(pixelToBasepairReferenceLadder: $pixelToBasepairReference, band: band)
+                                                        BandView(pixelToBasepairReferenceLadder: $viewModel.pixelToBasepairReferenceLadder, band: band)
                                                         
                                                         // The divide by 8.4 part are hard coded scale factors to match coordinates from object detection to UI. TODO: Make fit overlay and coordiante transformations universal - 29. Okt 2022 DONE
                                                         
-                                                            .position(x: getResizeAdjustedHorizontalPostition(geo: geo, band: band, imageWidth: mediaItems.items[index].photo!.size.width), y: getResizeAdjustedVerticalPostition(geo: geo, band: band, imageHeight: mediaItems.items[index].photo!.size.height))
+                                                            .position(x: getResizeAdjustedHorizontalPostition(geo: geo, band: band, imageWidth: viewModel.mediaItems.items[index].photo!.size.width), y: getResizeAdjustedVerticalPostition(geo: geo, band: band, imageHeight: viewModel.mediaItems.items[index].photo!.size.height))
                                                         // Change band box and text size based on iPhone orientation. Why small number 0.065 to get any effect?.
                                                         // TODO: Check for iPad device and orientation (less shrinking in portrait mode on iPad)
                                                         // TODO: Sometimes the adjustment is only recognized when turning back and forth again
@@ -922,83 +1050,32 @@ struct JSONContentUI: View {
                                 } // item.mediaType == .photo
                             } // ZStack
                             
-                            HStack{
-                                // Some status messages for the user
-                                if self.gelAnalysisResponse.isEmpty {
-                                    // TODO: Better placement or overlay over image
-                              
-                                    ProgressView("Analyzing Gel Image...")
+                            // Status message and save and crop buttons. Same row when width space is available, otherwise two rows.
+                            if verticalSizeClass == .compact {
+                                HStack{
+                                StatusMessagesView(viewModel: viewModel)
+                                Spacer()
+     
+                                GelImageActionButtonsView(viewModel: viewModel, index: index, imageViewWithOverlay: AnyView(imageViewWithOverlay))
                                 }
-                                else if self.pixelToBasepairReference.count < 2 {
-                                    Image(systemName: "info.circle")
-                                    Text("Select two bands per double tap as reference and assign a size.")
-                                }
-                                else {
-                                    Image(systemName: "info.circle")
-                                    Text("Data is not saved in this beta version. Save images to library.")
+                          
+                            }
+                            else {
+                               
+                                StatusMessagesView(viewModel: viewModel)
+                                HStack{
+                                // Align Crop, Add Band and Save button to the right
+                                Spacer()
+                                    //  TODO: Fix runtime error with imageViewWithOverlay.snapshot() when rotating - DONE with AnyView
+                                    // TODO: Split into three views for each button
+                                GelImageActionButtonsView(viewModel: viewModel, index: index, imageViewWithOverlay: AnyView(imageViewWithOverlay))
                                 }
                                 
-                            Spacer()
-                            // MARK: Save and Crop
-                            Button {
-                                showingCropper = true
-                                // When image is cropped, the scale of y-Axis changes and therfore the pixel to bp mapping becomes invalid
-                                // TODO: This removes ladder, as soon as crop button is hit, better would be after image is cropped to avoid removing the ladder when user cancles cropping. Even better, map Ladder to new y-Values.
-                                self.pixelToBasepairReference.removeAll()
-                            } label: {
-                                Label("Crop", systemImage: "crop")
-                            }.buttonStyle(BorderlessButtonStyle()) // Workaround to avoid Save and Crop action overlay each other https://stackoverflow.com/questions/58514891/two-buttons-inside-hstack-taking-action-of-each-other
-                            .fullScreenCover(isPresented: $showingCropper, content: {
-                                ImageCropper(image: $mediaItems.items[index].photo,
-                                             cropShapeType: $cropShapeType,
-                                             presetFixedRatioType: $presetFixedRatioType)
-                                    .ignoresSafeArea()
-                            })
-                            
-                            Button {
-
-                                showingAlertAddBand = true
-                                Mixpanel.mainInstance().track(event: "Try to add band manually")
-                                } label: {
-                                    Label("Add band", systemImage: "plus")
-                                }.buttonStyle(BorderlessButtonStyle())
-                                    .foregroundColor(Color.gray)
-                                 .alert("Adding bands manually is not implemented yet. We are on it. Sorry!", isPresented: $showingAlertAddBand) {
-                                        Button("OK", role: .cancel) { }
-                                    }
-//
-//                            if #available(iOS 16, *) {
-//                                // TODO: On a current XCode setup use ShareLink
-//                                // Run code in iOS 15 or later.
-//                                //    ShareLink("Export", item: imageViewWithOverlay, preview: SharePreview(Text("Shared image"), image: imageViewWithOverlay))
-//                                Button {
-//                                    let image = imageViewWithOverlay.snapshot()
-//
-//                                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
-//                                    showingAlertSavedImage = true
-//                                } label: {
-//                                    Label("Save", systemImage: "square.and.arrow.down")
-//                                }
-//                                .alert("Image saved. To view and share go to image library.", isPresented: $showingAlertSavedImage) {
-//                                    Button("OK", role: .cancel) { }
-//                                }
-//
-//                            } else {
-                                // Fall back to earlier iOS APIs.
-                                Button {
-                                    let image = imageViewWithOverlay.snapshot()
-                                    
-                                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
-                                    Mixpanel.mainInstance().track(event: "Save annotated image to library")
-                                    showingAlertSavedImage = true
-                                } label: {
-                                    Label("Save", systemImage: "square.and.arrow.down")
-                                }.buttonStyle(BorderlessButtonStyle())
-                                .alert("Image saved. To view and share go to image library.", isPresented: $showingAlertSavedImage) {
-                                    Button("OK", role: .cancel) { }
-                                }
-//                            }
                             }
+                           
+                            
+//                            }
+                            
 //                            ZStack {
                             imageViewWithOverlay
                             
@@ -1010,10 +1087,10 @@ struct JSONContentUI: View {
                         
                         .navigationBarItems(leading: Button(action: {
                             Mixpanel.mainInstance().track(event: "Trash",
-                                                          properties: ["Number of Media Items" : self.$mediaItems.items.count])
-                            self.mediaItems.deleteAll()
-                            self.pixelToBasepairReference.removeAll()
-                            self.gelAnalysisResponse.removeAll()
+                                                          properties: ["Number of Media Items" : self.viewModel.mediaItems.items.count])
+                            viewModel.mediaItems.deleteAll()
+                            viewModel.pixelToBasepairReferenceLadder.removeAll()
+                            viewModel.gelAnalysisResponse.removeAll()
 //                            print("Trash")
 //                            Mixpanel.initialize(token: "e69103063a3c6a5aa0a362b4413e9e1b", trackAutomaticEvents: true, serverURL: "https://api-eu.mixpanel.com/")
                             Mixpanel.mainInstance().track(event: "Trash",
@@ -1022,12 +1099,12 @@ struct JSONContentUI: View {
                         }, label: {Image(systemName: "trash").foregroundColor(.red)}), trailing: Button(action: { showImagePicker = true
                           
                         }, label: {Image(systemName: "plus")})        .sheet(isPresented: $showImagePicker, content: {
-                            PhotoPicker(mediaItems: mediaItems) { didSelectItem  in
+                            PhotoPicker(mediaItems: viewModel.mediaItems) { didSelectItem  in
                                 showImagePicker = false
                             }
                         })) // .sheet)
                         
-                        if mediaItems.items.isEmpty {
+                        if viewModel.mediaItems.items.isEmpty {
                             Text("Press + to load a DNA gel image")
                         }
                     } // VStack
@@ -1121,13 +1198,13 @@ struct JSONContentUI: View {
                 } // Section
             } // List
             // When images are selected, send them for analysis using the API with a POST requst
-            .onReceive(mediaItems.$items) { mitems in
+            .onReceive(viewModel.mediaItems.$items) { mitems in
                 //               self.imageAdded = true
                 print("Image changed")
                 Mixpanel.mainInstance().track(event: "Add new gel image",
                                               properties: ["Number of Media Items" : mitems.count])
                 //  Workaround to remove gel bands when new analysis is started. TODO: Make proper management of responses
-                self.gelAnalysisResponse.removeAll()
+                viewModel.gelAnalysisResponse.removeAll()
                 
                 for item in mitems {
                     // use UUID given by iOS in struct to make it identifyable as filename
@@ -1136,7 +1213,7 @@ struct JSONContentUI: View {
                     api.getGelImageMetaData(fileName: fileName, image: item.photo!) { result in
                         // Set result xid to item.id but could also do this on server
                         //                            result?.meta.xid = item.xid
-                        self.gelAnalysisResponse.append(result!) //TODO: Catch error when unwrapping
+                       viewModel.gelAnalysisResponse.append(result!) //TODO: Catch error when unwrapping
                         print("Result")
                         print(result!)
                         //                            (self.gelAnalysisResponse.append(result)) ?? (self.gelAnalysisResponse = [result])
@@ -1242,7 +1319,7 @@ struct JSONContentUI_Previews: PreviewProvider {
     static var previews: some View {
         
         if #available(iOS 15.0, *) {
-            JSONContentUI()
+            JSONContentUI().previewDevice("iPhone 11 Pro")
         } else {
             // Fallback on earlier versions
         }
