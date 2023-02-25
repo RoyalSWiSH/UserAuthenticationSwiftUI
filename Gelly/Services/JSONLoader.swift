@@ -332,16 +332,21 @@ struct BandView: View {
     
     // Toggel switch to turn a band into a reference band used as DNA ladder
     @State var isReferenceBand: Bool = false
+//
+//    @Environment(\.horizontalSizeClass) var horizontalSizeClass
+//    let verticalSizeClass: UserInterfaceSizeClass = .compact
+//
     
     var fontSize: Int = 14
     
-    init(pixelToBasepairReferenceLadder: Binding<[PixelToBasePairArray]>, band: Band ) {
+    init(pixelToBasepairReferenceLadder: Binding<[PixelToBasePairArray]>, band: Band, verticalSizeClass: UserInterfaceSizeClass) {
         // initialize all variables first
+        self.band = band
         self.roundedBasePairSize = band.bpSize
         self._pixelToBasepairReferenceLadder = pixelToBasepairReferenceLadder
         
         self.roundedBasePairSize = 0
-        self.band = band
+       
         //        self.bandName = ""
         
         if band.intensity == "pocket" {
@@ -351,8 +356,9 @@ struct BandView: View {
             self.columnName = ""
         }
         // Note: Can't modify state variable in init.
+//        self.verticalSizeClass = verticalSizeClass
         
-        print(self._pixelToBasepairReferenceLadder)
+//        print(self._pixelToBasepairReferenceLadder)
         
     }
     
@@ -428,19 +434,27 @@ struct BandView: View {
             //                fontSize = 14
             //            }
             
+//            if verticalSizeClass == .compact {
+            RoundedRectangle(cornerRadius: CGFloat(5))
+                .foregroundColor(Color.white.opacity(0.6))
+                .frame(width: 30, height: 10)
+                .minimumScaleFactor(0.01)
+//            }
+            
             Text((band.intensity == "pocket" || pixelToBasepairReferenceLadder.count < 2) ? columnName  : String(transformPixelToBasePairs(yPositionInPixels: ((band.yMin+band.yMax)/2), pixelToBasePairReference: pixelToBasepairReferenceLadder)) )
             //            Text(band.column.name)
             //                .border(.green)
                 .foregroundColor(.black)
-                .font(.system(size: 10, weight: .light, design: .default))
+
+                .frame(minWidth:10, idealWidth: 15, maxWidth: 50, minHeight: 3, idealHeight:3, maxHeight: 20, alignment: .center)
+                .font(.system(size: 8, weight: .light, design: .default))
             //                .minimumScaleFactor(0.01)
-                .padding(CGFloat(3))
-                .minimumScaleFactor(0.2)
+                .padding(CGFloat(0))
+//                .background(Color.white.opacity(0.6))
+                .clipShape(RoundedRectangle(cornerRadius: 5))
             
         } // VStack
-        .frame(minWidth:10, idealWidth: 15, maxWidth: 50, minHeight: 3, idealHeight:3, maxHeight: 20, alignment: .center)
-        .background(Color.white.opacity(0.6))
-        .clipShape(RoundedRectangle(cornerRadius: 5))
+        
         .onTapGesture(count: 2) {
             self.isShowingPopover = true
             
@@ -532,6 +546,17 @@ extension GelAnalysisResponse {
         case descriptionError
         case dataError
     }
+    
+    func nullToNil(value : AnyObject?) -> AnyObject? {
+        if value is NSNull {
+            return nil
+        } else {
+            return value
+        }
+    }
+
+//    object.feature = nullToNil(dict["feature"])
+    
     init(from decoder: Decoder) throws {
         let meta: Meta
         let gelImage: GelImage
@@ -539,7 +564,7 @@ extension GelAnalysisResponse {
         let experimentalMethod: ExperimentalMethod
         var ladder: Ladder
         let detection: Detection
-        let columns: [Column]
+        let columns: [Column]?
         let bands: [Band]
         
         let container = try decoder.container(keyedBy:CodingKeys.self)
@@ -578,6 +603,7 @@ extension GelAnalysisResponse {
         }
         
         do {
+            
             detection =  try container.decode(Detection.self, forKey: .detection)
         }
         catch {
@@ -586,11 +612,15 @@ extension GelAnalysisResponse {
         }
         
         do {
+            
             columns =  try container.decode([Column].self, forKey: .columns)
         }
         catch {
+            // FIX: Set columns to nil, if there are no columns detected. This can happen when the object detection algorithm does not find any gel pockets. Then the JSON object is null, which caused the app to crash.
+            columns = nil
             print(error)
-            throw DecodingError.descriptionError
+//            throw DecodingError.descriptionError
+            
         }
         
         do {
@@ -611,7 +641,7 @@ extension GelAnalysisResponse {
         self.experimentalMethod = experimentalMethod
         self.ladder = ladder
         self.detection = detection
-        self.columns = columns
+        self.columns =  columns
         self.bands = bands
     }
 }
@@ -804,6 +834,7 @@ enum FittingError: Error {
 
 
 // Main View Model
+// TODO: Instead of arrays, use single items as variables and then a GelAnalysisViewModel array for each geal image
 class GelAnalysisViewModel: ObservableObject {
     @Published var gelAnalysisResponse: [GelAnalysisResponse] = [GelAnalysisResponse]()
     
@@ -876,7 +907,7 @@ struct JSONContentUI: View {
 
     // Detect portrait and landscape (and landscape split screen...) orientation with size classes
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
-    @Environment(\.verticalSizeClass) var verticalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     
     
     
@@ -1010,7 +1041,7 @@ struct JSONContentUI: View {
                                                         //
                                                         
                                                         
-                                                        BandView(pixelToBasepairReferenceLadder: $viewModel.pixelToBasepairReferenceLadder, band: band)
+                                                        BandView(pixelToBasepairReferenceLadder: $viewModel.pixelToBasepairReferenceLadder, band: band, verticalSizeClass: verticalSizeClass ?? .compact)
                                                         
                                                         // The divide by 8.4 part are hard coded scale factors to match coordinates from object detection to UI. TODO: Make fit overlay and coordiante transformations universal - 29. Okt 2022 DONE
                                                         
@@ -1079,7 +1110,6 @@ struct JSONContentUI: View {
 //                            ZStack {
                             imageViewWithOverlay
                             
-                                
 //                            }
                   
                             //
@@ -1138,7 +1168,7 @@ struct JSONContentUI: View {
             } // NavigationLink
                     NavigationLink { Text("Settings")
                         ForEach(self.subscriptionProducts, id:\.skProduct) { product in
-                            Button("Buy \(product.localizedTitle) for \(product.localizedPrice ?? "No Price")") {
+                            Button("Subscribe to \(product.localizedTitle) for \(product.localizedPrice ?? "No Price")") {
                                 Adapty.makePurchase(product: product) { result in
                                     switch result {
                                     case let .success(profile):
