@@ -319,6 +319,14 @@ struct GelImageActionButtonsView: View {
 struct BandView: View {
     @State var band: Band
     
+    /// When opening the popup for the details regarding the base pair size, the object detection algorithm uses -1 if no base pair size is set. The algorithm can't calculate this, since the ladder information is required. The TextField should not display -1 though, it should tell the user to enter something and behave as an empty field. Therefore the TextFIeld binds to displayBpSize and that update band.bpSize.
+    ///
+    /// https://stackoverflow.com/questions/59341026/create-a-computed-state-variable-in-swiftui
+    var displayBpSize: Binding<Int?> { Binding (
+        get: { if self.band.bpSize == -1 {return nil} else {return self.band.bpSize} },
+        set: { self.band.bpSize = $0 ?? -1 }
+        )
+    }
     // Reference ladder to convert pixels to baise pairs (maybe add band and reference variables to Band
     // Bind to state of parent view, such that making a band a reference ladder and attaching a reference value to it can redraw the values of all the other bands.
     @Binding private var pixelToBasepairReferenceLadder: [PixelToBasePairArray]
@@ -490,7 +498,7 @@ struct BandView: View {
                     if isReferenceBand {
                         Text("What fragment size does this band have in base pairs?")
                             .padding()
-                    TextField("Enter band size in base pairs",  value: $band.bpSize, format: .number).padding()
+                        TextField("Enter band size in base pairs",  value: displayBpSize, formatter: NumberFormatter()).padding()
                         // TODO: Remove this button, use Toggle and binding instead
                         Button("Add Band to Ladder") {
                             self.pixelToBasepairReferenceLadder.append(PixelToBasePairArray(yPixel:( (band.yMin+band.yMax)/2), basePair: band.bpSize, bandXid: band.xid))
@@ -1290,8 +1298,9 @@ class Api: ObservableObject {
     func getGelImageMetaData(fileName: String, image: UIImage, completion: @escaping (GelAnalysisResponse?) -> Void) {
         
         // TODO: Remove hardcoded URL
+        // TODO: Enable SSL
         //            let url = URL(string: "http://127.0.0.1:1324/api/v1/electrophoresis/imageanalysis")
-        let url = URL(string: "http://167.172.190.93:1324/api/v1/electrophoresis/imageanalysis")
+        let url = URL(string: "https://api.gelly.bio/v1/electrophoresis/imageanalysis")
         let boundary = UUID().uuidString
         
         let session = URLSession.shared
